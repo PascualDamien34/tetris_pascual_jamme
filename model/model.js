@@ -12,6 +12,15 @@ class Model{
           }
 
           this.currentPiece = new Piece();
+
+     }
+
+     isOverlap(){
+
+     }
+
+     play(){
+
      }
 
 }
