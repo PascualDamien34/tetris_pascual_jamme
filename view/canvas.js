@@ -1,10 +1,10 @@
 
 window.onload = function() {
-	start();
+	//start();
 }
 
 function start(){
-	const canvas = new Canvas('dessin');
+	
 	canvas.initCanvasGrid();
 	var Grille = [	[1,0,0,0,0,1,0,0,0,4],
 					[0,1,0,0,0,0,0,0,0,0],
@@ -115,26 +115,7 @@ class Canvas {
 	}
 }
 
-document.addEventListener('keyup', (event) => {
-	const nomTouche = event.key;
-	switch (event.key) {
-		case "ArrowDown":
-			console.log("ArrowDown");
-		break;
-		case "ArrowUp":
-			console.log("ArrowUp");
-		break;
-		case "ArrowLeft":
-			console.log("ArrowLeft");
-		break;
-		case "ArrowRight":
-			console.log("ArrowRight");
-		break;
-		default:
-			canvas.valideLine(23);
-		return; 
-	}
-}, false);
+
 
 
 function sleep(ms) {

@@ -1,4 +1,4 @@
-class Model{
+class Modele{
 
      static HORIZONTAL_SIZE = 10;
      static VERTICAL_SIZE = 24;
