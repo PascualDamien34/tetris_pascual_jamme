@@ -1,129 +1,128 @@
 class Controller {
-  constructor(model, view) {
-    this.model = model
-    this.view = view
-  }
-
-  keyboardEvent(keyName){
-  	switch (keyName) {
-		case "ArrowDown":
-			console.log("ArrowDown");
-		break;
-		case "ArrowUp":
-			console.log("ArrowUp");
-		break;
-		case "ArrowLeft":
-			console.log("ArrowLeft");
-		break;
-		case "ArrowRight":
-			start();
-			console.log("ArrowRight");
-		break;
-		default:
-			this.view.canvas.valideLine(23);
-		return; 
+	constructor(model, view) {
+		this.model = model
+		this.view = view
 	}
-  }
+
+	keyboardEvent(keyName){
+		switch (keyName) {
+			case "ArrowDown":
+				console.log("ArrowDown");
+			break;
+			case "ArrowUp":
+				console.log("ArrowUp");
+			break;
+			case "ArrowLeft":
+				console.log("ArrowLeft");
+			break;
+			case "ArrowRight":
+				start();
+				console.log("ArrowRight");
+			break;
+			default:
+				this.view.canvas.valideLine(23);
+			return; 
+		}
+	}
 }
 
 
 class Model{
 
-     static HORIZONTAL_SIZE = 10;
-     static VERTICAL_SIZE = 24;
+	static HORIZONTAL_SIZE = 10;
+	static VERTICAL_SIZE = 24;
 
-     constructor(){
-          this.tab = new Array(Model.VERTICAL_SIZE);
-          
-          for(let i = 0 ; i<Model.VERTICAL_SIZE; i++){
-               this.tab[i] = new Array(Model.HORIZONTAL_SIZE);
-               this.tab[i].fill();
-          }
+	constructor(){
+		this.tab = new Array(Model.VERTICAL_SIZE);
 
-          this.currentPiece = new Piece();
+		for(let i = 0 ; i<Model.VERTICAL_SIZE; i++){
+			this.tab[i] = new Array(Model.HORIZONTAL_SIZE);
+			this.tab[i].fill();
+		}
 
-     }
+		this.currentPiece = new Piece();
 
-     isOverlap(){
+	}
 
-     }
+	isOverlap(){
 
-     play(){
-          this.currentPiece.printMatrix()
-     }
+	}
 
+	play(){
+		this.currentPiece.printMatrix()
+	}
 }
 
 
 class Piece{
 
-     static tabPieces = [
-                         [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],
-                         [[1,1],[1,1]],
-                         [[0,0,0],[1,1,1],[0,1,0]],
-                         [[0,0,0],[1,1,1],[1,0,0]],
-                         [[0,0,0],[1,1,1],[0,0,1]],
-                         [[1,1,0],[0,1,1],[0,0,0]],
-                         [[0,1,1],[1,1,0],[0,0,0]]
-                        ]
+	static tabPieces = [
+						[[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],
+						[[1,1],[1,1]],
+						[[0,0,0],[1,1,1],[0,1,0]],
+						[[0,0,0],[1,1,1],[1,0,0]],
+						[[0,0,0],[1,1,1],[0,0,1]],
+						[[1,1,0],[0,1,1],[0,0,0]],
+						[[0,1,1],[1,1,0],[0,0,0]]
+						]
 
-     constructor(){
-          let number = Math.floor(Math.random() * 7);
-          this.tetrominos = Piece.tabPieces[number];
-     }
+	constructor(){
+		let number = Math.floor(Math.random() * 7);
+		this.tetrominos = Piece.tabPieces[number];
+	}
 
-     rotation() {
+	rotation() {
  
-          let N = this.getSizeOfMatrice();
-          // cas de base
-          if (N == 0) {
-               return;
-          }
+		let N = this.getSizeOfMatrice();
+		// cas de base
+		if (N == 0) {
+			return;
+		}
  
-          // Transpose la matrice
-          for (let i = 0; i < N; i++)
-          {
-               for (let j = 0; j < i; j++) {
-                    let temp = this.tetrominos[i][j];
-                    this.tetrominos[i][j] = this.tetrominos[j][i];
-                    this.tetrominos[j][i] = temp;
-               }
-          }
+		// Transpose la matrice
+		for (let i = 0; i < N; i++)
+		{
+			for (let j = 0; j < i; j++) {
+				let temp = this.tetrominos[i][j];
+				this.tetrominos[i][j] = this.tetrominos[j][i];
+				this.tetrominos[j][i] = temp;
+			}
+		}
           
-          // permute les colonnes
-          for (let i = 0; i < N; i++)
-          {
-               for (let j = 0; j < N/2; j++) {
-                    let temp = this.tetrominos[i][j];
-                    this.tetrominos[i][j] = this.tetrominos[i][N - j - 1];
-                    this.tetrominos[i][N - j - 1] = temp;
-               }
-          }
-     }
+		// permute les colonnes
+		for (let i = 0; i < N; i++)
+		{
+			for (let j = 0; j < N/2; j++) {
+				let temp = this.tetrominos[i][j];
+				this.tetrominos[i][j] = this.tetrominos[i][N - j - 1];
+				this.tetrominos[i][N - j - 1] = temp;
+			}
+		}
+	}
 
-     getSizeOfMatrice(){
-          return this.tetrominos.length;
-     }
+	getSizeOfMatrice(){
+		return this.tetrominos.length;
+	}
      
-     printMatrix()
-     {
-          let N = this.getSizeOfMatrice();
-          let string = "";
-          for(let i=0;i<N;i++){
-               for(let j=0; j<N; j++){
-                    string += this.tetrominos[i][j].toString() + " ";
-               }
-               string += "\n";
-          }
-          console.log(string);
-          return;
-     }
+	printMatrix()
+	{
+		let N = this.getSizeOfMatrice();
+		let string = "";
+		for(let i=0;i<N;i++){
+			for(let j=0; j<N; j++){
+				string += this.tetrominos[i][j].toString() + " ";
+			}
+			string += "\n";
+		}
+		console.log(string);
+		return;
+	}
 }
 
 class View {
-  constructor(canvas) {
-    this.canvas = canvas
-  }
+	constructor(canvas) {
+		this.canvas = canvas
+	}
 }
 
 
