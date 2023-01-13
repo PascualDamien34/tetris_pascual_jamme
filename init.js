@@ -3,6 +3,10 @@ class Controller {
 		this.model = model
 		this.view = view
 	}
+	
+	buttonAI(){
+		console.log("test")
+	}
 
 	keyboardEvent(keyName){
 		switch (keyName) {
