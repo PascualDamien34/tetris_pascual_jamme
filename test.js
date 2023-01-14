@@ -10,18 +10,19 @@ class Model {
 			this.tab[i] = new Array(Model.HORIZONTAL_SIZE);
 			this.tab[i].fill(0);
 		}
-
+		//this.tab[20][4] = 4; //ici
 		this.currentPiece = new Piece();
+		this.nextPiece = new Piece();
 
 		this.play = this.play.bind(this);
 		this.down = this.down.bind(this);
 	}
 	
-	 // Binding.
-	 bindDisplayTetris (callback) {
-	   // Définition d'une nouvelle propriété pouvant être utilisée à partir d'une instance de Model.
-	   this.DisplayTetris = callback; // On veut pouvoir actualiser la View (depuis le Controller) quand nous récupérons les données.
-	 }
+	// Binding.
+	bindDisplayTetris (callback) {
+		// Définition d'une nouvelle propriété pouvant être utilisée à partir d'une instance de Model.
+		this.DisplayTetris = callback; // On veut pouvoir actualiser la View (depuis le Controller) quand nous récupérons les données.
+	}
 
 	actionKeyBoard(keyName){
 		switch (keyName) {
@@ -32,26 +33,59 @@ class Model {
 				this.currentPiece.rotation();
 			break;
 			case "ArrowLeft":
-				this.currentPiece.x += -1;
+				if(this.mouveLeft() && !this.isOverLapLeft()){
+					this.currentPiece.x -= 1;
+				}
 			break;
 			case "ArrowRight":
-				this.currentPiece.x += 1;
+				if(this.mouveRight()  && !this.isOverLapRight()){
+					this.currentPiece.x += 1;
+				}
 			break;
-			case "Space":
-				console.log("Space");
-				downFall();
+			case " ":
+				this.downFall();
 			break;
 		}
+	}
+
+	mouveLeft(){
+		let N = this.currentPiece.getSizeOfMatrice();
+		for (var i = 0; i < N; i++) {
+			for (var j = 0; j < N; j++) {
+				if(this.currentPiece.tetrominos[i][j]!=0 && this.tab[this.currentPiece.y+i][this.currentPiece.x+j-1]!=0){
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
+	mouveRight(){
+		let N = this.currentPiece.getSizeOfMatrice();
+		for (var i = 0; i < N; i++) {
+			for (var j = 0; j < N; j++) {
+				if(this.currentPiece.tetrominos[i][j]!=0 && this.tab[this.currentPiece.y+i][this.currentPiece.x+j+1]!=0){
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 
 	play(){
 		//this.currentPiece.printMatrix();
 		
 
-		
-		//console.log("L",this.isOverLapLeft());
-		console.log("R",this.isOverLapRight());
-		//remettre piece dans la grille auto
+		if(this.isOverLapBot()){
+			this.replaceBot();
+			//changer de piece
+			this.changePiece();
+		}
+		if(this.isOnPiece()){
+			this.currentPiece.y -= 1;
+			//changer de piece
+			this.changePiece();
+		}
 
 
 		this.DisplayTetris(this.mergeGrid());
@@ -59,9 +93,10 @@ class Model {
 	}
 
 	isOverLapLeft(){
+		let N = this.currentPiece.getSizeOfMatrice();
 		if(this.currentPiece.x<0){
-			for (var j = 0; j < this.currentPiece.getSizeOfMatrice(); j++) {
-				for (var i = 0; i < this.currentPiece.x * (-1) ; i++) {
+			for (var i = 0; i < this.currentPiece.x * (-1); i++) {
+				for(var j = 0; j<N; j++){
 					if(this.currentPiece.tetrominos[j][i]==1){
 						return true;
 					}
@@ -69,13 +104,18 @@ class Model {
 			}
 		}
 		return false;
+	}
+	replaceLeft(){
+		while(this.isOverLapLeft()){
+			this.currentPiece.x += 1;
+		}
 	}
 
 	isOverLapRight(){
 		let N = this.currentPiece.getSizeOfMatrice();
 		if(this.currentPiece.x + N > Model.HORIZONTAL_SIZE){
-			for (var j = 0; j < N; j++) {
-				for (var i = N-1; i > (this.currentPiece.x + N - Model.HORIZONTAL_SIZE) ; i--) {
+			for (var i = N-1; i > Model.HORIZONTAL_SIZE - this.currentPiece.x-1; i--) {
+				for(var j = 0; j<N; j++){
 					if(this.currentPiece.tetrominos[j][i]==1){
 						return true;
 					}
@@ -84,11 +124,62 @@ class Model {
 		}
 		return false;
 	}
+	replaceRight(){
+		while(this.isOverLapRight()){
+			this.currentPiece.x -= 1;
+		}
+	}
+
+	isOverLapBot(){
+		let N = this.currentPiece.getSizeOfMatrice();
+		if(this.currentPiece.y + N > Model.VERTICAL_SIZE){
+			for (var i = Model.VERTICAL_SIZE - this.currentPiece.y; i < N; i++) {
+				for(var j = 0; j<N; j++){
+					if(this.currentPiece.tetrominos[i][j]==1){
+						return true;
+					}
+				}
+			}
+		}
+	}
+	replaceBot(){
+		while(this.isOverLapBot()){
+			this.currentPiece.y -= 1;
+		}
+	}
+
+	changePiece(){
+		let N = this.currentPiece.getSizeOfMatrice();
+		for (var i = 0; i < N; i++) {
+			for (var j = 0; j < N; j++) {
+				if(this.currentPiece.tetrominos[i][j]!=0){
+					this.tab[this.currentPiece.y+i][this.currentPiece.x+j] = this.currentPiece.tetrominos[i][j];
+				}
+			}
+		}
+		this.currentPiece = this.nextPiece;
+		this.nextPiece = new Piece();
+	}
+
+
+	isOnPiece(){
+		let N = this.currentPiece.getSizeOfMatrice();
+		for (var i = 0; i < N; i++) {
+			for (var j = 0; j < N; j++) {
+				if(this.currentPiece.tetrominos[i][j]!=0 && this.tab[this.currentPiece.y+i][this.currentPiece.x+j]!=0){
+					//console.log("i=",i,"j=",j,"x=",this.currentPiece.x,"y=",this.currentPiece.y)
+					//console.log("tab=",this.tab[this.currentPiece.y+i][this.currentPiece.x+j])
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 
 	mergeGrid(){
-		//merge grid
+		//copie du tab
 		let tabCopy = new Array(Model.VERTICAL_SIZE);
-
 		for(let i = 0 ; i<Model.VERTICAL_SIZE; i++){
 			tabCopy[i] = new Array(Model.HORIZONTAL_SIZE);
 			tabCopy[i].fill(0);
@@ -111,8 +202,10 @@ class Model {
 				if(j>= Model.HORIZONTAL_SIZE){
 					break;
 				}
-				//console.log("i=",i," j=",j, "tab=",tabCopy[i][j])
-				tabCopy[i][j]=this.currentPiece.tetrominos[i - this.currentPiece.y][j - this.currentPiece.x];
+				
+				if(this.currentPiece.tetrominos[i - this.currentPiece.y][j - this.currentPiece.x]!=0){
+					tabCopy[i][j]=this.currentPiece.tetrominos[i - this.currentPiece.y][j - this.currentPiece.x];
+				}
 			}
 		}
 		return tabCopy;
@@ -120,10 +213,19 @@ class Model {
 
 	down(){
 		this.currentPiece.y += 1;
+		this.play(); // evite les bug, si down puis touche puis play, bug au niveau des arrays
 	}
 
 	downFall(){
-		console.log("downFall");
+		var height_start = this.currentPiece.y
+		console.log(height_start)
+		for (var i = 0; i < Model.VERTICAL_SIZE; i++) {
+			this.down();
+			console.log("y=",this.currentPiece.y)
+			if(height_start>this.currentPiece.y){
+				break;
+			}
+		}
 	}
 }
 
@@ -135,14 +237,17 @@ class Piece{
 						[[0,0,0],[1,1,1],[0,1,0]],
 						[[0,0,0],[1,1,1],[1,0,0]],
 						[[0,0,0],[1,1,1],[0,0,1]],
-						[[0,0,0],[1,1,0],[0,1,1]],
-						[[0,0,0],[0,1,1],[1,1,0]]
+						[[1,1,0],[0,1,1],[0,0,0]],
+						[[0,1,1],[1,1,0],[0,0,0]]
 						]
+
+	//static tabPieces = [[[3,0,0,3],[1,1,1,1],[0,0,0,0],[3,0,0,3]],[[1,1],[1,1]],[[3,0,3],[1,1,1],[3,1,3]],[[3,0,3],[1,1,1],[1,0,3]],[[3,0,3],[1,1,1],[3,0,1]],[[3,0,3],[1,1,0],[3,1,1]],[[3,0,3],[0,1,1],[1,1,3]]]
+	//ici
 
 	constructor(){
 		let number = Math.floor(Math.random() * 7);
 		this.tetrominos = Piece.tabPieces[number];
-
+		
 		let N = this.getSizeOfMatrice();
 		if(N == 2){
 			this.y = 1;
@@ -154,16 +259,15 @@ class Piece{
 		}else{
 			this.x = 4;
 		}
+
 	}
 
 	rotation() {
- 
 		let N = this.getSizeOfMatrice();
 		// cas de base
 		if (N == 0) {
 			return;
 		}
- 
 		// Transpose la matrice
 		for (let i = 0; i < N; i++)
 		{
@@ -173,7 +277,7 @@ class Piece{
 				this.tetrominos[j][i] = temp;
 			}
 		}
-          
+
 		// permute les colonnes
 		for (let i = 0; i < N; i++)
 		{
@@ -188,7 +292,7 @@ class Piece{
 	getSizeOfMatrice(){
 		return this.tetrominos.length;
 	}
-     
+
 	printMatrix()
 	{
 		let N = this.getSizeOfMatrice();
@@ -205,11 +309,12 @@ class Piece{
 }
 
 class View {
-	 constructor(canvas) {
-	   this.canvas = canvas;
-	 }
+	constructor(canvas,canvas2) {
+		this.canvas = canvas;
+		this.canvas2 = canvas2;
+	}
 	
-	 displayTetris (Tetris_value) {
+	displayTetris (Tetris_value) {
 		this.canvas.initCanvasGrid();
 		this.canvas.drawGrid(Tetris_value);
 	}
@@ -225,9 +330,8 @@ class Canvas {
 	static PALETTE = ['#0ad6ff','#4efd54', "#bc13fe", "#cfff04", "#fe019a", "#ff073a"];
 	static BLOCK_SPACE = 1;
 
-	constructor(div_id) {
-		this.div_id = div_id;
-		this.ctx = document.getElementById(div_id).getContext('2d');
+	constructor(id) {
+		this.ctx = document.getElementById(id).getContext('2d');
 	}
 
 	initCanvasGrid(){
@@ -277,23 +381,24 @@ class Canvas {
 }
 	
 class Controller {
-	 constructor(model, view) {
-	   this.model = model;
-	   this.view = view; 
+	constructor(model, view) {
+		this.model = model;
+		this.view = view; 
 
-	   this.bindDisplayTetris = this.bindDisplayTetris.bind(this);
-	   this.model.bindDisplayTetris(this.bindDisplayTetris);
+		this.bindDisplayTetris = this.bindDisplayTetris.bind(this);
+		this.model.bindDisplayTetris(this.bindDisplayTetris);
 
 
-	   this.intervalPlay = setInterval(this.model.play, 100);
-	   this.intervalDown = setInterval(this.model.down, 1000);
-	 }
+		this.intervalPlay = setInterval(this.model.play, 100);
+		this.intervalDown = setInterval(this.model.down, 1000);
+		
+	}
 	 
-	 bindDisplayTetris (Tetris_value) {
-	   this.view.displayTetris(Tetris_value);
-	 }
+	bindDisplayTetris (Tetris_value) {
+		this.view.displayTetris(Tetris_value);
+	}
 
-	 buttonAI(){
+	buttonAI(){
 		console.log("test")
 	}
 
@@ -304,7 +409,7 @@ class Controller {
 
 }
 
-const app = new Controller(new Model(), new View(new Canvas('dessin')));
+const app = new Controller(new Model(), new View(new Canvas('dessin'),new Canvas('dessin')));
 
 document.addEventListener('keyup', (event) => {
 	const nomTouche = event.key;
@@ -312,10 +417,10 @@ document.addEventListener('keyup', (event) => {
 }, false);
 
 function getRandomColor() {
-  var letters = '0123456789ABCDEF';
-  var color = '#';
-  for (var i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * 16)];
-  }
-  return color;
+	var letters = '0123456789ABCDEF';
+	var color = '#';
+	for (var i = 0; i < 6; i++) {
+		color += letters[Math.floor(Math.random() * 16)];
+	}
+	return color;
 }
