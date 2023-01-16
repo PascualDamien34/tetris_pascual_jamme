@@ -634,10 +634,15 @@ class Bot {
 				}
 			}
 			if(i>0){
-				temp2 = temp2 - temp1;
-			}else{
-				temp2 = temp1; 
+				let calc = temp2 - temp1;
+				if(calc < 0){
+					calc *= -1;
+				}
+				V += calc;
 			}
+			temp2 = temp1;
+
+
 		}
 	}
 }
