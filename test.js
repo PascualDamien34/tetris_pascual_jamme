@@ -15,6 +15,7 @@ class Model {
 		this.nextPiece = new Piece();
 
 		this.play = this.play.bind(this);
+		this.downFallInterval = this.downFallInterval.bind(this);
 
 		this.score = 0;
 	}
@@ -41,7 +42,9 @@ class Model {
 				this.down();
 			break;
 			case "ArrowUp":
-				this.currentPiece.rotation();
+				if(this.currentPiece.y>=0){
+					this.currentPiece.rotation();
+				}
 			break;
 			case "ArrowLeft":
 				if(this.isPossibleMouveLeft() && !this.isOverLapLeft()){
@@ -241,13 +244,38 @@ class Model {
 	}
 
 	downFall(){
+		/*
 		let nextPiece = this.nextPiece;
 		for (let i = 0; i < Model.VERTICAL_SIZE; i++) {
 			if(nextPiece == this.currentPiece){
 				break;
+			}else{
+			
+				setTimeout(() => {
+					this.down();
+					this.DisplayTetris(this.mergeGrid());
+				}, i*(1000/24))
 			}
-			this.down();
 		}
+		*/
+		this.downFallPiece = this.nextPiece;
+		if(this.downInterval == null){
+			console.log("eysuo")
+			this.downInterval = setInterval(this.downFallInterval, 10);
+		}
+
+	}
+
+	downFallInterval(){
+		if(this.downFallPiece == this.currentPiece){
+			console.log("stop")
+			clearInterval(this.downInterval)
+			this.downInterval = null;
+		}else{
+			this.down();
+			console.log("down")
+		}
+
 	}
 
 	checkLine(){
@@ -312,9 +340,9 @@ class Piece{
 		}
 
 		if(N == 2){
-			this.y = 1;
-		}else{	
 			this.y = 0;
+		}else{	
+			this.y = -1;
 		}
 		if (N==4){
 			this.x = 3;
@@ -428,7 +456,7 @@ class Canvas {
 		for (let i = 0; i < Canvas.HEIGHT; i++) {
 			for (let j = 0; j < Canvas.WIDTH; j++) {
 				if(grid[i][j]!=0){
-					this.ctx.fillStyle = Canvas.PALETTE[grid[i][j]-1];
+					this.ctx.fillStyle = Canvas.PALETTE[grid[i][j]-1];//-1 car les pieces commencent à 1 sur le tableau de pieces
 					this.ctx.fillRect(j*Canvas.SIZE_CASE + Canvas.BLOCK_SPACE, i*Canvas.SIZE_CASE + Canvas.BLOCK_SPACE, Canvas.SIZE_CASE - 2 * Canvas.BLOCK_SPACE, Canvas.SIZE_CASE - 2 * Canvas.BLOCK_SPACE);
 				}
 			}
