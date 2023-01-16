@@ -10,7 +10,6 @@ class Model {
 			this.tab[i] = new Array(Model.HORIZONTAL_SIZE);
 			this.tab[i].fill(0);
 		}
-		//this.tab[20][4] = 4; //ici
 		this.currentPiece = new Piece();
 		this.nextPiece = new Piece();
 
@@ -21,11 +20,11 @@ class Model {
 	}
 	
 	bindDisplayTetris (callback) {
-		this.DisplayTetris = callback;
+		this.displayTetris = callback;
 	}
 
 	bindBlinkLine (callback) {
-		this.BlinkLine = callback;
+		this.blinkLine = callback;
 	}
 
 	bindUpdateScore (callback) {
@@ -33,7 +32,7 @@ class Model {
 	}
 
 	bindEndGame(callback) {
-		this.EndGame = callback;
+		this.endGame = callback;
 	}
 
 	actionKeyBoard(keyName){
@@ -107,7 +106,7 @@ class Model {
 		}
 
 
-		this.DisplayTetris(this.mergeGrid());
+		this.displayTetris(this.mergeGrid(),this.getNextPiece4x4());
 
 		this.checkLine();
 		
@@ -182,7 +181,7 @@ class Model {
 		this.currentPiece = this.nextPiece;
 		this.nextPiece = new Piece();
 		if(this.isOnPiece()){
-			this.EndGame();
+			this.endGame();
 		}
 		this.score += 10;
 		this.updateScore(this.score);
@@ -194,8 +193,6 @@ class Model {
 		for (let i = 0; i < N; i++) {
 			for (let j = 0; j < N; j++) {
 				if(this.currentPiece.tetrominos[i][j]!=0 && this.tab[this.currentPiece.y+i][this.currentPiece.x+j]!=0){
-					//console.log("i=",i,"j=",j,"x=",this.currentPiece.x,"y=",this.currentPiece.y)
-					//console.log("tab=",this.tab[this.currentPiece.y+i][this.currentPiece.x+j])
 					return true;
 				}
 			}
@@ -217,7 +214,7 @@ class Model {
 			}
 		}
 
-		let N = this.currentPiece.getSizeOfMatrice()
+		let N = this.currentPiece.getSizeOfMatrice();
 		for (let i = this.currentPiece.y; i < N + this.currentPiece.y; i++) {
 			if(i >= Model.VERTICAL_SIZE){
 				break;
@@ -238,29 +235,36 @@ class Model {
 		return tabCopy;
 	}
 
+	getNextPiece4x4(){
+		let nextPiece4x4 = new Array(4);
+		for (let i = 0; i< nextPiece4x4.length; i++){
+			nextPiece4x4[i] = new Array(4);
+			nextPiece4x4[i].fill(0);
+		}
+
+		let N = this.nextPiece.getSizeOfMatrice();
+		for (let i = this.nextPiece.y; i < N + this.nextPiece.y; i++){
+			for (let j = 0; j < N; j++){
+				if(this.nextPiece.tetrominos[i - this.nextPiece.y][j]!=0){
+					if(N!=2){
+						nextPiece4x4[i+1][j]=this.nextPiece.tetrominos[i - this.nextPiece.y][j];
+					}else{
+						nextPiece4x4[i+1][j+1]=this.nextPiece.tetrominos[i - this.nextPiece.y][j];
+					}
+				}
+			}
+		}
+		return nextPiece4x4;
+	}
+
 	down(){
 		this.currentPiece.y += 1;
 		this.play(); // evite les bug, si down puis touche puis play, bug au niveau des arrays
 	}
 
 	downFall(){
-		/*
-		let nextPiece = this.nextPiece;
-		for (let i = 0; i < Model.VERTICAL_SIZE; i++) {
-			if(nextPiece == this.currentPiece){
-				break;
-			}else{
-			
-				setTimeout(() => {
-					this.down();
-					this.DisplayTetris(this.mergeGrid());
-				}, i*(1000/24))
-			}
-		}
-		*/
 		this.downFallPiece = this.nextPiece;
 		if(this.downInterval == null){
-			console.log("eysuo")
 			this.downInterval = setInterval(this.downFallInterval, 10);
 		}
 
@@ -268,12 +272,10 @@ class Model {
 
 	downFallInterval(){
 		if(this.downFallPiece == this.currentPiece){
-			console.log("stop")
 			clearInterval(this.downInterval)
 			this.downInterval = null;
 		}else{
 			this.down();
-			console.log("down")
 		}
 
 	}
@@ -294,7 +296,7 @@ class Model {
 
 	delLine(i){
 		//a verifier validation line en haut
-		this.BlinkLine(i);
+		this.blinkLine(i);
 		for (let j = 0; j < Model.HORIZONTAL_SIZE; j++) {
 			this.tab[i][j]=0;
 		}
@@ -320,9 +322,6 @@ class Piece{
 						[[0,0,0],[6,6,0],[0,6,6]],
 						[[0,0,0],[0,7,7],[7,7,0]]
 						]
-
-	//static tabPieces = [[[3,0,0,3],[1,1,1,1],[0,0,0,0],[3,0,0,3]],[[1,1],[1,1]],[[3,0,3],[1,1,1],[3,1,3]],[[3,0,3],[1,1,1],[1,0,3]],[[3,0,3],[1,1,1],[3,0,1]],[[3,0,3],[1,1,0],[3,1,1]],[[3,0,3],[0,1,1],[1,1,3]]]
-	//ici
 
 	constructor(){
 		let number = Math.floor(Math.random() * 7);
@@ -393,7 +392,6 @@ class Piece{
 			}
 			string += "\n";
 		}
-		console.log(string);
 		return;
 	}
 }
@@ -404,9 +402,11 @@ class View {
 		this.canvas2 = canvas2;
 	}
 	
-	displayTetris (Tetris_value) {
+	displayTetris (Tetris_value,next_piece) {
 		this.canvas.initCanvasGrid();
 		this.canvas.drawGrid(Tetris_value);
+		this.canvas2.initCanvasGrid();
+		this.canvas2.drawGrid(next_piece);
 	}
 
 	blinkLine(Line_value){
@@ -421,40 +421,40 @@ class View {
 
 class Canvas {
 
-	static HEIGHT = 24;
-	static WIDTH = 10;
 	static SIZE_CASE = 30;
-	static PIXEL_HEIGHT = Canvas.HEIGHT * Canvas.SIZE_CASE;
-	static PIXEL_WIDTH = Canvas.WIDTH * Canvas.SIZE_CASE;
 	static PALETTE = ['#0ad6ff','#1DCD23', "#bc13fe", "#cfff04", "#fe019a", "#ff073a",'#2243FF'];
 	static BLOCK_SPACE = 1;
 
-	constructor(id) {
+	constructor(id,height,width) {
+		this.height = height;
+		this.width = width;
+		this.pixel_height = height * Canvas.SIZE_CASE;
+		this.pixel_width =  width * Canvas.SIZE_CASE;
 		this.ctx = document.getElementById(id).getContext('2d');
 	}
 
 	initCanvasGrid(){
 		//this.ctx.fillStyle = getRandomColor();
 		this.ctx.fillStyle = "#121212";
-		this.ctx.fillRect(0, 0, Canvas.SIZE_CASE * Canvas.WIDTH, Canvas.SIZE_CASE * Canvas.HEIGHT);
+		this.ctx.fillRect(0, 0, Canvas.SIZE_CASE * this.width, Canvas.SIZE_CASE * this.height);
 		this.ctx.strokeStyle='white';
 		this.ctx.lineWidth=0.2;
 		
 		this.ctx.beginPath(); // Start
-		for (let col=0; col < Canvas.WIDTH; col++) {
+		for (let col=0; col <= this.width; col++) {
 			this.ctx.moveTo(col*Canvas.SIZE_CASE,0);
-			this.ctx.lineTo(col*Canvas.SIZE_CASE, Canvas.PIXEL_HEIGHT); // Draw a line 
+			this.ctx.lineTo(col*Canvas.SIZE_CASE, this.pixel_height); // Draw a line 
 		}
-		for (let line=0; line <= Canvas.HEIGHT; line++) {
+		for (let line=0; line <= this.height; line++) {
 			this.ctx.moveTo(0, line*Canvas.SIZE_CASE);
-			this.ctx.lineTo(Canvas.PIXEL_WIDTH, line*Canvas.SIZE_CASE); // Draw a line 
+			this.ctx.lineTo(this.pixel_width, line*Canvas.SIZE_CASE); // Draw a line 
 		}
 		this.ctx.stroke(); // End	
 	}
 
 	drawGrid(grid){
-		for (let i = 0; i < Canvas.HEIGHT; i++) {
-			for (let j = 0; j < Canvas.WIDTH; j++) {
+		for (let i = 0; i < this.height; i++) {
+			for (let j = 0; j < this.width; j++) {
 				if(grid[i][j]!=0){
 					this.ctx.fillStyle = Canvas.PALETTE[grid[i][j]-1];//-1 car les pieces commencent à 1 sur le tableau de pieces
 					this.ctx.fillRect(j*Canvas.SIZE_CASE + Canvas.BLOCK_SPACE, i*Canvas.SIZE_CASE + Canvas.BLOCK_SPACE, Canvas.SIZE_CASE - 2 * Canvas.BLOCK_SPACE, Canvas.SIZE_CASE - 2 * Canvas.BLOCK_SPACE);
@@ -465,7 +465,7 @@ class Canvas {
 
 	async valideLine(line){
 		for (let i = 0; i <4; i++) {
-			for (let j = 0; j < Canvas.WIDTH; j++) {
+			for (let j = 0; j < this.width; j++) {
 				if (i % 2 == 0){
 					this.ctx.fillStyle = "white";
 					this.ctx.fillRect(j*Canvas.SIZE_CASE+Canvas.BLOCK_SPACE, line*Canvas.SIZE_CASE+Canvas.BLOCK_SPACE, Canvas.SIZE_CASE-2*Canvas.BLOCK_SPACE, Canvas.SIZE_CASE-2*Canvas.BLOCK_SPACE);
@@ -480,12 +480,16 @@ class Canvas {
 }
 	
 class Controller {
-	constructor(model, view) {
+	constructor(model, view, bot) {
 		this.model = model;
-		this.view = view; 
+		this.view = view;
+		this.bot = bot; 
 
 		this.bindDisplayTetris = this.bindDisplayTetris.bind(this);
 		this.model.bindDisplayTetris(this.bindDisplayTetris);
+
+		this.bindBotAction = this.bindBotAction.bind(this);
+		this.bot.bindBotAction(this.bindBotAction);
 
 		this.bindBlinkLine = this.bindBlinkLine.bind(this);
 		this.model.bindBlinkLine(this.bindBlinkLine);
@@ -500,13 +504,18 @@ class Controller {
 
 		this.intervalPlay = setInterval(this.model.play, 100);
 		this.clock = this.clock.bind(this);
+		this.playBot = this.playBot.bind(this);
 		this.intervalDown = setInterval(this.clock, 1000);
 		this.game = true;
-		
+		this.botActivate = false;
 	}
 	 
-	bindDisplayTetris (Tetris_value) {
-		this.view.displayTetris(Tetris_value);
+	bindDisplayTetris (Tetris_value,next_piece) {
+		this.view.displayTetris(Tetris_value,next_piece);
+	}
+
+	bindBotAction (action) {
+		this.model.actionKeyBoard(action);
 	}
 
 	bindBlinkLine (Line_value) {
@@ -519,17 +528,29 @@ class Controller {
 
 	bindEndGame(){
 		this.game = false;
-		console.log("End Game;");
+		console.log("End Game");
 		clearInterval(this.intervalPlay);
 		clearInterval(this.intervalDown);
 	}
 
 	buttonAI(){
-		console.log("test");
+		this.botActivate = !this.botActivate;
+		if(this.botActivate){
+			this.intervalBot = setInterval(this.playBot, 100); //ici à mettre 20
+		}else{
+			clearInterval(this.intervalBot);
+			this.intervalBot = null;
+		}
+	}
+
+	playBot(){
+		if(this.game){
+			this.bot.play(this.model.tab,this.model.currentPiece);
+		}
 	}
 
 	keyboardEvent(keyName){
-		if(this.game){
+		if(this.game && !this.botActivate){
 			this.model.actionKeyBoard(keyName);
 		}
 	}
@@ -544,20 +565,95 @@ class Controller {
 		if(this.game){
 			this.model.down();
 			this.intervalDown = setInterval(this.clock, speed);
-		}
-		
-		
+		}		
 	}
-
-
 }
 
-const app = new Controller(new Model(), new View(new Canvas('dessin'),new Canvas('dessin')));
+class Bot {
+	constructor() {
+		this.play.bind(this);
+		this.score = 0;
+		this.coefW = -1; 	//Min
+		this.coefX = 1; 	//Max
+		this.coefY = -1;	//Min
+		this.coefZ = -1;	//Min
+		this.height = 24;
+		this.width = 10;
+	}
+
+	bindBotAction (callback) {
+		this.botAction = callback;
+	}
+
+	play(tab,currentPiece){
+		checkAllPosibility(tab,currentPiece);
+		let number = Math.floor(Math.random() * 5);
+		let arraysMove = ["ArrowDown","ArrowUp","ArrowLeft","ArrowRight"," "];
+		this.botAction(arraysMove[number]);
+	}
+
+	checkAllPosibility(tab,currentPiece){
+		//
+
+		//mergegrid = grid
+
+		//calcScore(grid)
+	}
+
+	calcScore(grid){
+		let H = 24;	//Hauteur max
+		let N = 0;	//Nombre de ligne faite
+		let T = 0;	//Trou
+		for (let i = 0; i < this.height; i++) {
+			let count = 1;
+			for(let j = 0; j < this.width; j++){
+				if(grid[i][j]!=0 && H>i){
+					H = i;
+				}
+				if(i!=0 && grid[i][j]==0 && grid[i-1][j]!=0){
+					T++;
+				}
+				if(grid[i][j]!=0){
+					count++;
+				}
+			}
+			if(count == this.width){
+				N++;
+			}
+		}
+		H = 24 - H;
+
+		let V = 0;	//Hauteur variation
+		let temp1 = 0;
+		let temp2 = 0;
+		for (let i = 0; i < this.width; i++) {
+			for(let j = 0; j < this.height; j++){
+				if(grid[i][j]!=0){
+					temp1 = j;
+					break;
+				}
+			}
+			if(i>0){
+				temp2 = temp2 - temp1;
+			}else{
+				temp2 = temp1; 
+			}
+		}
+	}
+}
+
+const app = new Controller(new Model(), new View(new Canvas('dessin',24,10),new Canvas('dessin2',4,4)), new Bot());
 
 document.addEventListener('keyup', (event) => {
 	const nomTouche = event.key;
 	app.keyboardEvent(nomTouche);	
 }, false);
+
+let btn = document.getElementById('AI_button');
+btn.addEventListener('click', (event) => {
+	app.buttonAI();
+	btn.blur();
+});
 
 function getRandomColor() {
 	let letters = '0123456789ABCDEF';
