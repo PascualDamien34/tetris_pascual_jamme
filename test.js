@@ -573,9 +573,9 @@ class Bot {
 	constructor() {
 		this.play.bind(this);
 		this.score = 0;
-		this.coefW = -1; 	//Min
-		this.coefX = 1; 	//Max
-		this.coefY = -1;	//Min
+		this.coefW = -10; 	//Min
+		this.coefX = 100; 	//Max
+		this.coefY = -2;	//Min
 		this.coefZ = -1;	//Min
 		this.height = 24;
 		this.width = 10;
@@ -586,14 +586,14 @@ class Bot {
 	}
 
 	play(tab,currentPiece){
-		checkAllPosibility(tab,currentPiece);
-		let number = Math.floor(Math.random() * 5);
-		let arraysMove = ["ArrowDown","ArrowUp","ArrowLeft","ArrowRight"," "];
-		this.botAction(arraysMove[number]);
+		this.checkAllPosibility(tab,currentPiece);
 	}
 
 	checkAllPosibility(tab,currentPiece){
-		//
+		let number = Math.floor(Math.random() * 5);
+		let arraysMove = ["ArrowDown","ArrowUp","ArrowLeft","ArrowRight"," "];
+		console.log(this.calcScore(tab));
+		this.botAction(arraysMove[number]);
 
 		//mergegrid = grid
 
@@ -619,6 +619,7 @@ class Bot {
 			}
 			if(count == this.width){
 				N++;
+				console.log(N);
 			}
 		}
 		H = 24 - H;
@@ -626,13 +627,18 @@ class Bot {
 		let V = 0;	//Hauteur variation
 		let temp1 = 0;
 		let temp2 = 0;
+		//console.log("Init ---------------------------------", grid);
 		for (let i = 0; i < this.width; i++) {
 			for(let j = 0; j < this.height; j++){
-				if(grid[i][j]!=0){
+				if(grid[j][i]!=0){
 					temp1 = j;
 					break;
 				}
+				if(j==this.height-1){
+					temp1 = 24;
+				}
 			}
+			
 			if(i>0){
 				let calc = temp2 - temp1;
 				if(calc < 0){
@@ -641,9 +647,8 @@ class Bot {
 				V += calc;
 			}
 			temp2 = temp1;
-
-
 		}
+		return this.coefW * H + this.coefX * N + this.coefY * T + this.coefZ * V;
 	}
 }
 
