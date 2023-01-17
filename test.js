@@ -15,6 +15,7 @@ class Model {
 
 		this.play = this.play.bind(this);
 		this.downFallInterval = this.downFallInterval.bind(this);
+		this.isOnPiece = this.isOnPiece.bind(this);
 
 		this.score = 0;
 	}
@@ -35,6 +36,7 @@ class Model {
 		this.endGame = callback;
 	}
 
+
 	actionKeyBoard(keyName){
 		switch (keyName) {
 			case "ArrowDown":
@@ -46,12 +48,12 @@ class Model {
 				}
 			break;
 			case "ArrowLeft":
-				if(this.isPossibleMouveLeft() && !this.isOverLapLeft()){
+				if(this.isPossibleMouveLeft() && !this.isOverLapLeft(this.currentPiece)){
 					this.currentPiece.x -= 1;
 				}
 			break;
 			case "ArrowRight":
-				if(this.isPossibleMouveRight()  && !this.isOverLapRight()){
+				if(this.isPossibleMouveRight()  && !this.isOverLapRight(this.currentPiece)){
 					this.currentPiece.x += 1;
 				}
 			break;
@@ -86,20 +88,19 @@ class Model {
 	}
 
 	play(){
-		
-		if(this.isOverLapLeft()){
+		if(this.isOverLapLeft(this.currentPiece)){
 			this.replaceLeft()
 		}
-		if(this.isOverLapRight()){
+		if(this.isOverLapRight(this.currentPiece)){
 			this.replaceRight()
 		}
 
-		if(this.isOverLapBot()){
+		if(this.isOverLapBot(this.currentPiece)){
 			this.replaceBot();
 			//changer de piece
 			this.changePiece();
 		}
-		if(this.isOnPiece()){
+		if(this.isOnPiece(this.currentPiece,this.tab)){
 			this.currentPiece.y -= 1;
 			//changer de piece
 			this.changePiece();
@@ -113,12 +114,12 @@ class Model {
 
 	}
 
-	isOverLapLeft(){
-		let N = this.currentPiece.getSizeOfMatrice();
-		if(this.currentPiece.x<0){
-			for (let i = 0; i < this.currentPiece.x * (-1); i++) {
+	isOverLapLeft(piece){
+		let N = piece.getSizeOfMatrice();
+		if(piece.x<0){
+			for (let i = 0; i < piece.x * (-1); i++) {
 				for(let j = 0; j<N; j++){
-					if(this.currentPiece.tetrominos[j][i]!=0){
+					if(piece.tetrominos[j][i]!=0){
 						return true;
 					}
 				}
@@ -127,17 +128,17 @@ class Model {
 		return false;
 	}
 	replaceLeft(){
-		while(this.isOverLapLeft()){
+		while(this.isOverLapLeft(this.currentPiece)){
 			this.currentPiece.x += 1;
 		}
 	}
 
-	isOverLapRight(){
-		let N = this.currentPiece.getSizeOfMatrice();
-		if(this.currentPiece.x + N > Model.HORIZONTAL_SIZE){
-			for (let i = N-1; i > Model.HORIZONTAL_SIZE - this.currentPiece.x-1; i--) {
+	isOverLapRight(piece){
+		let N = piece.getSizeOfMatrice();
+		if(piece.x + N > Model.HORIZONTAL_SIZE){
+			for (let i = N-1; i > Model.HORIZONTAL_SIZE - piece.x-1; i--) {
 				for(let j = 0; j<N; j++){
-					if(this.currentPiece.tetrominos[j][i]!=0){
+					if(piece.tetrominos[j][i]!=0){
 						return true;
 					}
 				}
@@ -146,17 +147,17 @@ class Model {
 		return false;
 	}
 	replaceRight(){
-		while(this.isOverLapRight()){
+		while(this.isOverLapRight(this.currentPiece)){
 			this.currentPiece.x -= 1;
 		}
 	}
 
-	isOverLapBot(){
-		let N = this.currentPiece.getSizeOfMatrice();
-		if(this.currentPiece.y + N > Model.VERTICAL_SIZE){
-			for (let i = Model.VERTICAL_SIZE - this.currentPiece.y; i < N; i++) {
+	isOverLapBot(piece){
+		let N = piece.getSizeOfMatrice();
+		if(piece.y + N > Model.VERTICAL_SIZE){
+			for (let i = Model.VERTICAL_SIZE - piece.y; i < N; i++) {
 				for(let j = 0; j<N; j++){
-					if(this.currentPiece.tetrominos[i][j]!=0){
+					if(piece.tetrominos[i][j]!=0){
 						return true;
 					}
 				}
@@ -164,7 +165,7 @@ class Model {
 		}
 	}
 	replaceBot(){
-		while(this.isOverLapBot()){
+		while(this.isOverLapBot(this.currentPiece)){
 			this.currentPiece.y -= 1;
 		}
 	}
@@ -180,7 +181,7 @@ class Model {
 		}
 		this.currentPiece = this.nextPiece;
 		this.nextPiece = new Piece();
-		if(this.isOnPiece()){
+		if(this.isOnPiece(this.currentPiece,this.tab)){
 			this.endGame();
 		}
 		this.score += 10;
@@ -188,11 +189,11 @@ class Model {
 	}
 
 
-	isOnPiece(){
-		let N = this.currentPiece.getSizeOfMatrice();
+	isOnPiece(piece,tab){
+		let N = piece.getSizeOfMatrice();
 		for (let i = 0; i < N; i++) {
 			for (let j = 0; j < N; j++) {
-				if(this.currentPiece.tetrominos[i][j]!=0 && this.tab[this.currentPiece.y+i][this.currentPiece.x+j]!=0){
+				if(piece.tetrominos[i][j]!=0 && tab[piece.y+i][piece.x+j]!=0){
 					return true;
 				}
 			}
@@ -267,7 +268,6 @@ class Model {
 		if(this.downInterval == null){
 			this.downInterval = setInterval(this.downFallInterval, 10);
 		}
-
 	}
 
 	downFallInterval(){
@@ -309,6 +309,60 @@ class Model {
 		this.score += 100;
 		this.updateScore(this.score);
 	}
+
+	isOverLapLeftSimu(x,currentPiece){
+		let N = currentPiece.getSizeOfMatrice();
+		if(x<0){
+			for (let i = 0; i < x * (-1); i++) {
+				for(let j = 0; j<N; j++){
+					if(currentPiece.tetrominos[j][i]!=0){
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	isOverLapRightSimu(x,currentPiece){
+		let N = currentPiece.getSizeOfMatrice();
+		if(x + N > Model.HORIZONTAL_SIZE){
+			for (let i = N-1; i > Model.HORIZONTAL_SIZE - x-1; i--) {
+				for(let j = 0; j<N; j++){
+					if(currentPiece.tetrominos[j][i]!=0){
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	isOverLapBotSimu(y,currentPiece){
+		let N = currentPiece.getSizeOfMatrice();
+		if(y + N > Model.VERTICAL_SIZE){
+			for (let i = Model.VERTICAL_SIZE - y; i < N; i++) {
+				for(let j = 0; j<N; j++){
+					if(currentPiece.tetrominos[i][j]!=0){
+						return true;
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	isOnPieceSimu(x,y,currentPiece,tab){
+		let N = currentPiece.getSizeOfMatrice();
+		for (let i = 0; i < N; i++) {
+			for (let j = 0; j < N; j++) {
+				if(currentPiece.tetrominos[i][j]!=0 && tab[y+i][x+j]!=0){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 }
 
 class Piece{
@@ -324,6 +378,7 @@ class Piece{
 						]
 
 	constructor(){
+		this.getSizeOfMatrice = this.getSizeOfMatrice.bind(this);
 		let number = Math.floor(Math.random() * 7);
 		
 		let N = Piece.tabPieces[number].length;
@@ -491,6 +546,15 @@ class Controller {
 		this.bindBotAction = this.bindBotAction.bind(this);
 		this.bot.bindBotAction(this.bindBotAction);
 
+		this.bindIsOverLapLeft = this.bindIsOverLapLeft.bind(this);
+		this.bot.bindIsOverLapLeft(this.bindIsOverLapLeft);
+		this.bindIsOverLapRight = this.bindIsOverLapRight.bind(this);
+		this.bot.bindIsOverLapRight(this.bindIsOverLapRight);
+		this.bindIsOverLapBot = this.bindIsOverLapBot.bind(this);
+		this.bot.bindIsOverLapBot(this.bindIsOverLapBot);
+		this.bindIsOnPiece = this.bindIsOnPiece.bind(this);
+		this.bot.bindIsOnPiece(this.bindIsOnPiece);
+
 		this.bindBlinkLine = this.bindBlinkLine.bind(this);
 		this.model.bindBlinkLine(this.bindBlinkLine);
 
@@ -516,6 +580,19 @@ class Controller {
 
 	bindBotAction (action) {
 		this.model.actionKeyBoard(action);
+	}
+
+	bindIsOverLapLeft (piece) {
+		return this.model.isOverLapLeft(piece);
+	}
+	bindIsOverLapRight (piece) {
+		return this.model.isOverLapRight(piece);
+	}
+	bindIsOverLapBot (clonePiece) {
+		return this.model.isOverLapBot(clonePiece);
+	}
+	bindIsOnPiece (piece,tab) {
+		return this.model.isOnPiece(piece,tab);
 	}
 
 	bindBlinkLine (Line_value) {
@@ -585,19 +662,140 @@ class Bot {
 		this.botAction = callback;
 	}
 
+	bindIsOverLapLeft (callback) {
+		this.isOverLapLeft = callback;
+	}
+	bindIsOverLapRight (callback) {
+		this.isOverLapRight = callback;
+	}
+	bindIsOverLapBot (callback) {
+		this.isOverLapBot = callback;
+	}
+	bindIsOnPiece (callback) {
+		this.isOnPiece = callback;
+	}
+
+
 	play(tab,currentPiece){
 		this.checkAllPosibility(tab,currentPiece);
 	}
 
 	checkAllPosibility(tab,currentPiece){
+		//let clonePiece = { ...currentPiece };
+		//clonePiece = JSON.parse(JSON.stringify(currentPiece)); //ne garde pas les fonctions
+		let clonePiece = clone(currentPiece);
+		
+		
+		
+		
 		let number = Math.floor(Math.random() * 5);
 		let arraysMove = ["ArrowDown","ArrowUp","ArrowLeft","ArrowRight"," "];
+		let N = clonePiece.getSizeOfMatrice();
+		let r,i,j;
+		for (r = 0; r < 4; r++) {
+			for (let q = 0; q < N; q++) {
+				console.log(clonePiece.tetrominos[q])
+			}
+			for (i = -N; i < this.width + N; i++) {
+				clonePiece.x = i;
+				if(!this.isOverLapLeft(clonePiece)&&!this.isOverLapRight(clonePiece)){
+					//console.log("i/x=",i,this.isOverLapLeft(clonePiece),this.isOverLapRight(clonePiece));	//CODE SUPPER UTIL
+
+					for(j = 0; j < this.height; j++){
+						clonePiece.y = j;
+
+						if(this.isOverLapBot(clonePiece) || this.isOnPiece(clonePiece,tab)){
+							clonePiece.y -= 1;
+
+
+
+
+							//copie du tab
+							let tabCopy = new Array(Model.VERTICAL_SIZE);
+							for(let i = 0 ; i<Model.VERTICAL_SIZE; i++){
+								tabCopy[i] = new Array(Model.HORIZONTAL_SIZE);
+								tabCopy[i].fill(0);
+							}
+							for (let i = 0; i < tab.length; i++) {
+								for (let j = 0; j < tab[0].length; j++) {
+									tabCopy[i][j] = tab[i][j];
+								}
+							}
+
+							let N = clonePiece.getSizeOfMatrice();
+							for (let i = clonePiece.y; i < N + clonePiece.y; i++) {
+								if(i >= Model.VERTICAL_SIZE){
+									break;
+								}
+								for (let j = clonePiece.x; j < N + clonePiece.x; j++) {
+									if(j<0){
+										continue;
+									}
+									if(j>= Model.HORIZONTAL_SIZE){
+										break;
+									}
+									
+									if(clonePiece.tetrominos[i - clonePiece.y][j - clonePiece.x]!=0){
+										tabCopy[i][j]=clonePiece.tetrominos[i - clonePiece.y][j - clonePiece.x];
+									}
+								}
+							}
+							for(let q = 20; q < this.height; q++){
+								console.log("q",tabCopy[q])
+							}
+							console.log(r,i,j,"----------------------------------------")
+
+
+
+
+							console.log("RESULTAT = ",i,j)
+							break;
+						}
+					}
+
+
+				}
+			}
+
+			
+			clonePiece.rotation();
+			
+			console.log("-------")
+
+		}
+		/*for (r = 0; r < 4; r++) {
+			for (let q = 0; q < N; q++) {
+				console.log(currentPiece.tetrominos[q])
+			}
+			for (i = -N; i < this.width + N; i++) {
+				if(!this.isOverLapLeftSimu(i,currentPiece)&&!this.isOverLapRightSimu(i,currentPiece)){
+					console.log("i/x=",i,this.isOverLapLeftSimu(i,currentPiece),this.isOverLapRightSimu(i,currentPiece));
+
+					for(j = 0; j < this.height; j++){
+						if(this.isOverLapBotSimu(j,currentPiece) || this.isOnPieceSimu(i,j,currentPiece,tab)){
+							j--;
+							console.log("RESULTAT = ",i,j)
+							break;
+						}
+					}
+
+
+				}
+			}
+
+			
+			currentPiece.rotation();
+			
+			console.log("-------")
+		}*/
+		console.log(r,i,j)
 		console.log(this.calcScore(tab));
 		this.botAction(arraysMove[number]);
 
 		//mergegrid = grid
 
 		//calcScore(grid)
+		app.model.endGame();
 	}
 
 	calcScore(grid){
@@ -627,7 +825,6 @@ class Bot {
 		let V = 0;	//Hauteur variation
 		let temp1 = 0;
 		let temp2 = 0;
-		//console.log("Init ---------------------------------", grid);
 		for (let i = 0; i < this.width; i++) {
 			for(let j = 0; j < this.height; j++){
 				if(grid[j][i]!=0){
@@ -676,3 +873,25 @@ function getRandomColor() {
 function sleep(ms) {
 	return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+function clone(originalObject){ //Permet de copier un objet avec les function sans garder l'héredité
+    if((typeof originalObject !== 'object') || originalObject === null){ 
+        throw new TypeError("originalObject parameter must be an object which is not null"); 
+    } 
+  
+    var deepCopy = JSON.parse(JSON.stringify(originalObject)); 
+  
+    // Une petite récursivité 
+    function deepProto(originalObject, deepCopy){ 
+        deepCopy.__proto__ = Object.create(originalObject.constructor.prototype); 
+        for(var attribute in originalObject){ 
+            if(typeof originalObject[attribute] === 'object' && originalObject[attribute] !== null){ 
+                deepProto(originalObject[attribute], deepCopy[attribute]); 
+            } 
+        } 
+    } 
+    deepProto(originalObject, deepCopy); 
+  
+    return deepCopy; 
+} 
+  
