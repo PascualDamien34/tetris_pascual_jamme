@@ -107,7 +107,7 @@ class Model {
 		}
 
 
-		this.displayTetris(this.mergeGrid(),this.getNextPiece4x4());
+		this.displayTetris(this.mergeGrid(this.currentPiece,this.tab),this.getNextPiece4x4());
 
 		this.checkLine();
 		
@@ -202,25 +202,25 @@ class Model {
 	}
 
 
-	mergeGrid(){
+	mergeGrid(piece,tab){
 		//copie du tab
 		let tabCopy = new Array(Model.VERTICAL_SIZE);
 		for(let i = 0 ; i<Model.VERTICAL_SIZE; i++){
 			tabCopy[i] = new Array(Model.HORIZONTAL_SIZE);
 			tabCopy[i].fill(0);
 		}
-		for (let i = 0; i < this.tab.length; i++) {
-			for (let j = 0; j < this.tab[0].length; j++) {
-				tabCopy[i][j] = this.tab[i][j];
+		for (let i = 0; i < tab.length; i++) {
+			for (let j = 0; j < tab[0].length; j++) {
+				tabCopy[i][j] = tab[i][j];
 			}
 		}
 
-		let N = this.currentPiece.getSizeOfMatrice();
-		for (let i = this.currentPiece.y; i < N + this.currentPiece.y; i++) {
+		let N = piece.getSizeOfMatrice();
+		for (let i = piece.y; i < N + piece.y; i++) {
 			if(i >= Model.VERTICAL_SIZE){
 				break;
 			}
-			for (let j = this.currentPiece.x; j < N + this.currentPiece.x; j++) {
+			for (let j = piece.x; j < N + piece.x; j++) {
 				if(j<0){
 					continue;
 				}
@@ -228,8 +228,8 @@ class Model {
 					break;
 				}
 				
-				if(this.currentPiece.tetrominos[i - this.currentPiece.y][j - this.currentPiece.x]!=0){
-					tabCopy[i][j]=this.currentPiece.tetrominos[i - this.currentPiece.y][j - this.currentPiece.x];
+				if(piece.tetrominos[i - piece.y][j - piece.x]!=0){
+					tabCopy[i][j]=piece.tetrominos[i - piece.y][j - piece.x];
 				}
 			}
 		}
@@ -554,6 +554,8 @@ class Controller {
 		this.bot.bindIsOverLapBot(this.bindIsOverLapBot);
 		this.bindIsOnPiece = this.bindIsOnPiece.bind(this);
 		this.bot.bindIsOnPiece(this.bindIsOnPiece);
+		this.bindMergeGrid = this.bindMergeGrid.bind(this);
+		this.bot.bindMergeGrid(this.bindMergeGrid);
 
 		this.bindBlinkLine = this.bindBlinkLine.bind(this);
 		this.model.bindBlinkLine(this.bindBlinkLine);
@@ -593,6 +595,9 @@ class Controller {
 	}
 	bindIsOnPiece (piece,tab) {
 		return this.model.isOnPiece(piece,tab);
+	}
+	bindMergeGrid (piece,tab) {
+		return this.model.mergeGrid(piece,tab);
 	}
 
 	bindBlinkLine (Line_value) {
@@ -674,6 +679,9 @@ class Bot {
 	bindIsOnPiece (callback) {
 		this.isOnPiece = callback;
 	}
+	bindMergeGrid (callback) {
+		this.mergeGrid = callback;
+	}
 
 
 	play(tab,currentPiece){
@@ -709,7 +717,7 @@ class Bot {
 
 
 
-
+							/*
 							//copie du tab
 							let tabCopy = new Array(Model.VERTICAL_SIZE);
 							for(let k = 0 ; k<Model.VERTICAL_SIZE; k++){
@@ -740,6 +748,10 @@ class Bot {
 									}
 								}
 							}
+
+							*/
+
+							let tabCopy = this.mergeGrid(clonePiece,tab)
 							for(let q = 20; q < this.height; q++){
 								console.log("q",tabCopy[q])
 							}
