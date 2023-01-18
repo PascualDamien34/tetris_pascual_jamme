@@ -712,31 +712,31 @@ class Bot {
 
 							//copie du tab
 							let tabCopy = new Array(Model.VERTICAL_SIZE);
-							for(let i = 0 ; i<Model.VERTICAL_SIZE; i++){
-								tabCopy[i] = new Array(Model.HORIZONTAL_SIZE);
-								tabCopy[i].fill(0);
+							for(let k = 0 ; k<Model.VERTICAL_SIZE; k++){
+								tabCopy[k] = new Array(Model.HORIZONTAL_SIZE);
+								tabCopy[k].fill(0);
 							}
-							for (let i = 0; i < tab.length; i++) {
-								for (let j = 0; j < tab[0].length; j++) {
-									tabCopy[i][j] = tab[i][j];
+							for (let k = 0; k < tab.length; k++) {
+								for (let l = 0; l < tab[0].length; l++) {
+									tabCopy[k][l] = tab[k][l];
 								}
 							}
 
 							let N = clonePiece.getSizeOfMatrice();
-							for (let i = clonePiece.y; i < N + clonePiece.y; i++) {
-								if(i >= Model.VERTICAL_SIZE){
+							for (let k = clonePiece.y; k < N + clonePiece.y; k++) {
+								if(k >= Model.VERTICAL_SIZE){
 									break;
 								}
-								for (let j = clonePiece.x; j < N + clonePiece.x; j++) {
-									if(j<0){
+								for (let l = clonePiece.x; l < N + clonePiece.x; l++) {
+									if(l<0){
 										continue;
 									}
-									if(j>= Model.HORIZONTAL_SIZE){
+									if(l>= Model.HORIZONTAL_SIZE){
 										break;
 									}
 									
-									if(clonePiece.tetrominos[i - clonePiece.y][j - clonePiece.x]!=0){
-										tabCopy[i][j]=clonePiece.tetrominos[i - clonePiece.y][j - clonePiece.x];
+									if(clonePiece.tetrominos[k - clonePiece.y][l - clonePiece.x]!=0){
+										tabCopy[k][l]=clonePiece.tetrominos[k - clonePiece.y][l - clonePiece.x];
 									}
 								}
 							}
