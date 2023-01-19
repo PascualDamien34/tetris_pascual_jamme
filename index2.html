@@ -35,7 +35,7 @@
 			border-radius: 5px;
 			text-align: center;
 			padding: 10px;
-			width: 500px;
+			width: 1200px;
 			display: flex;
 		}
 
@@ -82,11 +82,7 @@
 		</div>
 
 		
-		<div>
-			<canvas id="dessin" height="720px" width="300px"></canvas>
-		</div>
-		<div id="space">
-		</div>
+		
 		<div>
 			<canvas id="dessinn" height="120px" width="120px"></canvas>
 			<h1>Score</h1>
@@ -108,5 +104,24 @@
 		document.getElementById('minicanvas').innerHTML = text;
 	</script>
 	<script type="text/javascript" src="test.js"></script>
+	<script type="text/javascript">
+		var resultat = []
+		var tab = [];
+		for (let i = 1; i <= 250; i++) {
+			let name = "app"+i
+			console.log(name,i)
+			tab.push(new Controller(new Model(), new View(new Canvas('dessin'+i,24,10,3),new Canvas('dessinn',4,4,3)), new Bot()));
+			tab[i-1].buttonAI();
+		}
+
+		function final(){
+			var tableau = new Array(250);
+			for (var i = 0; i < resultat.length; i++) {
+				tableau[resultat[i][6]] = resultat[i];
+			}
+			tableau.sort((a, b) => b[0] - a[0]);
+			console.log(tableau)
+		}
+	</script>
 </body>
 </html>
