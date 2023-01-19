@@ -38,6 +38,7 @@ class Model {
 
 
 	actionKeyBoard(keyName){
+		//console.log(keyName,'is pressed')
 		switch (keyName) {
 			case "ArrowDown":
 				this.down();
@@ -171,6 +172,7 @@ class Model {
 	}
 
 	changePiece(){
+		//app.test = true; 		//ici
 		let N = this.currentPiece.getSizeOfMatrice();
 		for (let i = 0; i < N; i++) {
 			for (let j = 0; j < N; j++) {
@@ -229,7 +231,7 @@ class Model {
 				}
 				
 				if(piece.tetrominos[i - piece.y][j - piece.x]!=0 && i!=-1){
-					console.log(i,piece.y,j, piece.x)
+					//console.log(i,piece.y,j, piece.x)
 					tabCopy[i][j]=piece.tetrominos[i - piece.y][j - piece.x];
 				}
 			}
@@ -453,16 +455,19 @@ class Piece{
 }
 
 class View {
-	constructor(canvas,canvas2) {
+	constructor(canvas,canvas2,preview) {
 		this.canvas = canvas;
 		this.canvas2 = canvas2;
+		this.preview = preview;
 	}
 	
 	displayTetris (Tetris_value,next_piece) {
 		this.canvas.initCanvasGrid();
 		this.canvas.drawGrid(Tetris_value);
-		this.canvas2.initCanvasGrid();
-		this.canvas2.drawGrid(next_piece);
+		if(this.preview){
+			this.canvas2.initCanvasGrid();
+			this.canvas2.drawGrid(next_piece);
+		}
 	}
 
 	blinkLine(Line_value){
@@ -476,33 +481,33 @@ class View {
 
 class Canvas {
 
-	static SIZE_CASE = 30;
 	static PALETTE = ['#0ad6ff','#1DCD23', "#bc13fe", "#cfff04", "#fe019a", "#ff073a",'#2243FF'];
 	static BLOCK_SPACE = 1;
 
-	constructor(id,height,width) {
+	constructor(id,height,width,size) {
 		this.height = height;
 		this.width = width;
-		this.pixel_height = height * Canvas.SIZE_CASE;
-		this.pixel_width =  width * Canvas.SIZE_CASE;
+		this.size = size;
+		this.pixel_height = height * this.size;
+		this.pixel_width =  width * this.size;
 		this.ctx = document.getElementById(id).getContext('2d');
 	}
 
 	initCanvasGrid(){
 		//this.ctx.fillStyle = getRandomColor();
 		this.ctx.fillStyle = "#121212";
-		this.ctx.fillRect(0, 0, Canvas.SIZE_CASE * this.width, Canvas.SIZE_CASE * this.height);
+		this.ctx.fillRect(0, 0, this.size * this.width, this.size * this.height);
 		this.ctx.strokeStyle='white';
 		this.ctx.lineWidth=0.2;
 		
 		this.ctx.beginPath(); // Start
 		for (let col=0; col <= this.width; col++) {
-			this.ctx.moveTo(col*Canvas.SIZE_CASE,0);
-			this.ctx.lineTo(col*Canvas.SIZE_CASE, this.pixel_height); // Draw a line 
+			this.ctx.moveTo(col*this.size,0);
+			this.ctx.lineTo(col*this.size, this.pixel_height); // Draw a line 
 		}
 		for (let line=0; line <= this.height; line++) {
-			this.ctx.moveTo(0, line*Canvas.SIZE_CASE);
-			this.ctx.lineTo(this.pixel_width, line*Canvas.SIZE_CASE); // Draw a line 
+			this.ctx.moveTo(0, line*this.size);
+			this.ctx.lineTo(this.pixel_width, line*this.size); // Draw a line 
 		}
 		this.ctx.stroke(); // End	
 	}
@@ -512,7 +517,7 @@ class Canvas {
 			for (let j = 0; j < this.width; j++) {
 				if(grid[i][j]!=0){
 					this.ctx.fillStyle = Canvas.PALETTE[grid[i][j]-1];//-1 car les pieces commencent à 1 sur le tableau de pieces
-					this.ctx.fillRect(j*Canvas.SIZE_CASE + Canvas.BLOCK_SPACE, i*Canvas.SIZE_CASE + Canvas.BLOCK_SPACE, Canvas.SIZE_CASE - 2 * Canvas.BLOCK_SPACE, Canvas.SIZE_CASE - 2 * Canvas.BLOCK_SPACE);
+					this.ctx.fillRect(j*this.size + Canvas.BLOCK_SPACE, i*this.size + Canvas.BLOCK_SPACE, this.size - 2 * Canvas.BLOCK_SPACE, this.size - 2 * Canvas.BLOCK_SPACE);
 				}
 			}
 		}
@@ -523,10 +528,10 @@ class Canvas {
 			for (let j = 0; j < this.width; j++) {
 				if (i % 2 == 0){
 					this.ctx.fillStyle = "white";
-					this.ctx.fillRect(j*Canvas.SIZE_CASE+Canvas.BLOCK_SPACE, line*Canvas.SIZE_CASE+Canvas.BLOCK_SPACE, Canvas.SIZE_CASE-2*Canvas.BLOCK_SPACE, Canvas.SIZE_CASE-2*Canvas.BLOCK_SPACE);
+					this.ctx.fillRect(j*this.size+Canvas.BLOCK_SPACE, line*this.size+Canvas.BLOCK_SPACE, this.size-2*Canvas.BLOCK_SPACE, this.size-2*Canvas.BLOCK_SPACE);
 				}else{
 					this.ctx.fillStyle = "#121212";
-					this.ctx.fillRect(j*Canvas.SIZE_CASE+Canvas.BLOCK_SPACE, line*Canvas.SIZE_CASE+Canvas.BLOCK_SPACE, Canvas.SIZE_CASE-2*Canvas.BLOCK_SPACE, Canvas.SIZE_CASE-2*Canvas.BLOCK_SPACE);
+					this.ctx.fillRect(j*this.size+Canvas.BLOCK_SPACE, line*this.size+Canvas.BLOCK_SPACE, this.size-2*Canvas.BLOCK_SPACE, this.size-2*Canvas.BLOCK_SPACE);
 				}
 			}
 			await sleep(100);
@@ -539,6 +544,7 @@ class Controller {
 		this.model = model;
 		this.view = view;
 		this.bot = bot; 
+		this.test = false;	//ici
 
 		this.bindDisplayTetris = this.bindDisplayTetris.bind(this);
 		this.model.bindDisplayTetris(this.bindDisplayTetris);
@@ -614,6 +620,30 @@ class Controller {
 		clearInterval(this.intervalBot);
 		clearInterval(this.intervalPlay);
 		clearInterval(this.intervalDown);
+
+		//index2
+		if(train){
+			var l = [];
+			l.push(this.model.score);
+			l.push(this.bot.coefW);
+			l.push(this.bot.coefX);
+			l.push(this.bot.coefY);
+			l.push(this.bot.coefZ);
+			l.push(this)
+			let score = 0;
+			for (let i = 1; i <= 250; i++) {
+				if(this == tab[i-1]){
+					l.push(i-1)
+				}
+				if(tab[i-1].model.score>score){
+					score = tab[i-1].model.score
+				}
+			}
+			resultat.push(l)
+			console.log(score)
+			console.log("coefW",this.bot.coefW,"coefX",this.bot.coefX,"coefY",this.bot.coefY,"coefZ",this.bot.coefZ)
+			document.getElementById('score2').innerHTML = score;
+		}
 	}
 
 	buttonAI(){
@@ -646,7 +676,7 @@ class Controller {
 		}
 		clearInterval(this.intervalDown);
 		if(this.game){
-			this.model.down();
+			this.model.down();	//ici
 			this.intervalDown = setInterval(this.clock, speed);
 		}		
 	}
@@ -656,10 +686,28 @@ class Bot {
 	constructor() {
 		this.play.bind(this);
 		this.score = 0;
-		this.coefW = -10; 	//Min Hauteur max
-		this.coefX = 100; 	//Max Nombre de ligne faite
-		this.coefY = -20;	//Min Trou
-		this.coefZ = -30;	//Min Hauteur variation
+
+
+		this.coefW = -Math.random(); 	//Min Hauteur max
+		this.coefX = Math.random(); 	//Max Nombre de ligne faite
+		this.coefY = -Math.random();		//Min Trou
+		this.coefZ = -Math.random();		//Min Hauteur variation
+
+		this.coefW = -0.23967712739020697; 	//Min Hauteur max
+		this.coefX = 0.016713747415713076; 	//Max Nombre de ligne faite
+		this.coefY = -0.7919406833255183;		//Min Trou
+		this.coefZ = -0.10286078820120625;		//Min Hauteur variation
+
+		//coefW -0.9238170864140516 coefX 0.4754818260992921 coefY -0.7100678831359575 coefZ -0.6914619791749592
+		//coefW -0.23967712739020697 coefX 0.016713747415713076 coefY -0.7919406833255183 coefZ -0.10286078820120625 //14950
+
+		//this.coefW = -0.1; 	//Min Hauteur max
+		//this.coefX = 1; 	//Max Nombre de ligne faite
+		//this.coefY = -1;		//Min Trou
+		//this.coefZ = -1;		//Min Hauteur variation
+
+		console.log("coefW",this.coefW,"coefX",this.coefX,"coefY",this.coefY,"coefZ",this.coefZ)
+
 		this.height = 24;
 		this.width = 10;
 		this.queue = [];
@@ -687,29 +735,41 @@ class Bot {
 
 
 	play(tab,currentPiece){
+		//tab[23] = [0,5,1,2,0,0,4,4,5,5];
+		if(app.test){	//ici bam mvc
+			return;
+		}
 		let lst = this.checkAllPosibility(tab,currentPiece);
+		//ici //console.log(lst,this.queue)
 		let arraysMove = ["ArrowDown","ArrowUp","ArrowLeft","ArrowRight"," "];
 
+		
 		if(this.queue.length==0){
+			this.queue.push("ArrowDown");
 			for (let i = 0;i<lst[1];i++) {
+				//ici //console.log("ROTATION",i,lst[1])
 				this.queue.push("ArrowUp");
 			}
 			let calcul = currentPiece.x - lst[2];
-			if(calcul<0){
-				for (let i = 0;i<calcul;i++) {
-					this.queue.push("ArrowRight");
-				}
-			}else if(calcul>0){
+			if(calcul>0){
 				for (let i = 0;i<calcul;i++) {
 					this.queue.push("ArrowLeft");
 				}
+			}else if(calcul<0){
+				calcul = calcul * -1;
+				for (let i = 0;i<calcul;i++) {
+					this.queue.push("ArrowRight");
+				}
 			}
 			this.queue.push(" ");
-		}
-		console.log("queue",this.queue)
-		let first = this.queue.shift();
-		this.botAction(first);
+			let length = this.queue.length;
+			//ici //console.log("queue",this.queue,this.queue.length,currentPiece)
+			for (let i = 0;i<length;i++) {	
+				let first = this.queue.shift();
+				this.botAction(first);
+			}
 
+		}
 		
 	}
 
@@ -750,11 +810,11 @@ class Bot {
 								returnList[4] = tabCopy;
 							}
 
-							/*for(let q = 20; q < this.height; q++){
+							/*
+							for(let q = 20; q < this.height; q++){
 								console.log("q",tabCopy[q])
 							}
 							console.log(r,i,j,"----------------------------------------")
-
 							console.log("RESULTAT = ",i,j)
 							*/
 							break;
@@ -793,9 +853,15 @@ class Bot {
 					[0,0,0,0,0,0,0,0,0,0],
 					[0,0,0,0,0,0,0,0,0,0],
 					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,1,0,1,0,0,0,0],
-					[3,5,1,0,3,0,4,4,5,5]]
+					[0,0,0,0,0,0,0,0,0,0],
+					[3,5,1,2,3,0,4,4,5,5]]
+		//console.log("----")
+		//console.log("score",this.calcScore(Grille))
+		//console.log(returnList)
 
+		//bam le mvc
+		//app.view.canvas.drawGrid(Grille);
+		//app.model.endGame();
 		return returnList;
 		
 		//this.botAction(arraysMove[number]);
@@ -823,7 +889,7 @@ class Bot {
 			}
 			if(count == this.width){
 				N++;
-				console.log(N);
+				//console.log(N);
 			}
 		}
 		H = 24 - H;
@@ -851,12 +917,12 @@ class Bot {
 			}
 			temp2 = temp1;
 		}
-		//console.log('G',H,N,T,V)
+
+		//console.log('S',this.coefW * H + this.coefX * N + this.coefY * T + this.coefZ * V,'Hauteur max',H,'Nombre de ligne faite',N,'trou',T,"ca",V)
 		return this.coefW * H + this.coefX * N + this.coefY * T + this.coefZ * V;
 	}
 }
 
-const app = new Controller(new Model(), new View(new Canvas('dessin',24,10),new Canvas('dessin2',4,4)), new Bot());
 
 document.addEventListener('keyup', (event) => {
 	const nomTouche = event.key;
@@ -901,4 +967,37 @@ function clone(originalObject){ //Permet de copier un objet avec les function sa
   
     return deepCopy; 
 } 
-  
+
+
+//index2
+
+
+//var train = true;
+//const app = new Controller(new Model(), new View(new Canvas('dessin',24,10,30),new Canvas('dessinn',4,4,30)), new Bot());
+var train = false;
+const app = new Controller(new Model(), new View(new Canvas('dessin',24,10,30),new Canvas('dessin2',4,4,30)), new Bot());
+
+if(train){
+	
+	var resultat = []
+
+	
+	
+	var tab = [];
+	for (let i = 1; i <= 250; i++) {
+		let name = "app"+i
+		console.log(name,i)
+		tab.push(new Controller(new Model(), new View(new Canvas('dessin'+i,24,10,3),new Canvas('dessin',4,4,3)), new Bot()));
+		tab[i-1].buttonAI();
+	}
+}
+
+
+function final(){
+	var tableau = new Array(250);
+	for (var i = 0; i < resultat.length; i++) {
+		tableau[resultat[i][6]] = resultat[i];
+	}
+	tableau.sort((a, b) => b[0] - a[0]);
+	console.log(tableau)
+}

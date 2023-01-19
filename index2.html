@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+
 <head>
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -65,13 +65,22 @@
 		.container__0 #space{
 			padding: 4%	
 		}
+		#minicanvas{
+			display: flex;
+		}
 		
 	</style>
 
 </head>
+
 <body>
 		
 	<div id="mvc" class="container__0">
+
+		<div id="minicanvas">
+
+		</div>
+
 		
 		<div>
 			<canvas id="dessin" height="720px" width="300px"></canvas>
@@ -79,12 +88,25 @@
 		<div id="space">
 		</div>
 		<div>
-			<canvas id="dessin2" height="120px" width="120px"></canvas>
+			<canvas id="dessinn" height="120px" width="120px"></canvas>
 			<h1>Score</h1>
 			<h1 id="score">000</h1>
+			<h1 id="score2">000</h1>
 			<button id="AI_button">Active AI</button>
 		</div>
 	</div>
+	<script type="text/javascript">
+		var text = "";
+		for (var i = 0; i < 25; i++) {
+			text += "<div>";
+			for (var j = 0; j < 10; j++) {
+				var cal = i*10+j+1;
+				text += '<canvas id="dessin'+cal+'" height="72px" width="30px"></canvas>'
+			}
+			text += "</div>";
+		}
+		document.getElementById('minicanvas').innerHTML = text;
+	</script>
 	<script type="text/javascript" src="test.js"></script>
 </body>
 </html>
