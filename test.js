@@ -228,7 +228,8 @@ class Model {
 					break;
 				}
 				
-				if(piece.tetrominos[i - piece.y][j - piece.x]!=0){
+				if(piece.tetrominos[i - piece.y][j - piece.x]!=0 && i!=-1){
+					console.log(i,piece.y,j, piece.x)
 					tabCopy[i][j]=piece.tetrominos[i - piece.y][j - piece.x];
 				}
 			}
@@ -471,7 +472,6 @@ class View {
 	updateScore(score){
 		document.getElementById('score').innerHTML = score;
 	}
-
 }
 
 class Canvas {
@@ -611,6 +611,7 @@ class Controller {
 	bindEndGame(){
 		this.game = false;
 		console.log("End Game");
+		clearInterval(this.intervalBot);
 		clearInterval(this.intervalPlay);
 		clearInterval(this.intervalDown);
 	}
@@ -655,12 +656,13 @@ class Bot {
 	constructor() {
 		this.play.bind(this);
 		this.score = 0;
-		this.coefW = -10; 	//Min
-		this.coefX = 100; 	//Max
-		this.coefY = -2;	//Min
-		this.coefZ = -1;	//Min
+		this.coefW = -10; 	//Min Hauteur max
+		this.coefX = 100; 	//Max Nombre de ligne faite
+		this.coefY = -20;	//Min Trou
+		this.coefZ = -30;	//Min Hauteur variation
 		this.height = 24;
 		this.width = 10;
+		this.queue = [];
 	}
 
 	bindBotAction (callback) {
@@ -685,7 +687,30 @@ class Bot {
 
 
 	play(tab,currentPiece){
-		this.checkAllPosibility(tab,currentPiece);
+		let lst = this.checkAllPosibility(tab,currentPiece);
+		let arraysMove = ["ArrowDown","ArrowUp","ArrowLeft","ArrowRight"," "];
+
+		if(this.queue.length==0){
+			for (let i = 0;i<lst[1];i++) {
+				this.queue.push("ArrowUp");
+			}
+			let calcul = currentPiece.x - lst[2];
+			if(calcul<0){
+				for (let i = 0;i<calcul;i++) {
+					this.queue.push("ArrowRight");
+				}
+			}else if(calcul>0){
+				for (let i = 0;i<calcul;i++) {
+					this.queue.push("ArrowLeft");
+				}
+			}
+			this.queue.push(" ");
+		}
+		console.log("queue",this.queue)
+		let first = this.queue.shift();
+		this.botAction(first);
+
+		
 	}
 
 	checkAllPosibility(tab,currentPiece){
@@ -697,12 +722,12 @@ class Bot {
 		
 		
 		let number = Math.floor(Math.random() * 5);
-		let arraysMove = ["ArrowDown","ArrowUp","ArrowLeft","ArrowRight"," "];
 		let N = clonePiece.getSizeOfMatrice();
+		let returnList = [-100000,0,0,0]
 		let r,i,j;
 		for (r = 0; r < 4; r++) {
 			for (let q = 0; q < N; q++) {
-				console.log(clonePiece.tetrominos[q])
+				//console.log(clonePiece.tetrominos[q])
 			}
 			for (i = -N; i < this.width + N; i++) {
 				clonePiece.x = i;
@@ -711,56 +736,27 @@ class Bot {
 
 					for(j = 0; j < this.height; j++){
 						clonePiece.y = j;
-
 						if(this.isOverLapBot(clonePiece) || this.isOnPiece(clonePiece,tab)){
 							clonePiece.y -= 1;
 
-
-
-							/*
-							//copie du tab
-							let tabCopy = new Array(Model.VERTICAL_SIZE);
-							for(let k = 0 ; k<Model.VERTICAL_SIZE; k++){
-								tabCopy[k] = new Array(Model.HORIZONTAL_SIZE);
-								tabCopy[k].fill(0);
-							}
-							for (let k = 0; k < tab.length; k++) {
-								for (let l = 0; l < tab[0].length; l++) {
-									tabCopy[k][l] = tab[k][l];
-								}
-							}
-
-							let N = clonePiece.getSizeOfMatrice();
-							for (let k = clonePiece.y; k < N + clonePiece.y; k++) {
-								if(k >= Model.VERTICAL_SIZE){
-									break;
-								}
-								for (let l = clonePiece.x; l < N + clonePiece.x; l++) {
-									if(l<0){
-										continue;
-									}
-									if(l>= Model.HORIZONTAL_SIZE){
-										break;
-									}
-									
-									if(clonePiece.tetrominos[k - clonePiece.y][l - clonePiece.x]!=0){
-										tabCopy[k][l]=clonePiece.tetrominos[k - clonePiece.y][l - clonePiece.x];
-									}
-								}
-							}
-
-							*/
-
 							let tabCopy = this.mergeGrid(clonePiece,tab)
-							for(let q = 20; q < this.height; q++){
+							let score = this.calcScore(tabCopy);
+							//console.log("score=",score)
+							if(score>returnList[0]){
+								returnList[0] = score;
+								returnList[1] = r;
+								returnList[2] = i;
+								returnList[3] = j;
+								returnList[4] = tabCopy;
+							}
+
+							/*for(let q = 20; q < this.height; q++){
 								console.log("q",tabCopy[q])
 							}
 							console.log(r,i,j,"----------------------------------------")
 
-
-
-
 							console.log("RESULTAT = ",i,j)
+							*/
 							break;
 						}
 					}
@@ -771,43 +767,41 @@ class Bot {
 
 			
 			clonePiece.rotation();
-			
-			console.log("-------")
-
 		}
-		/*for (r = 0; r < 4; r++) {
-			for (let q = 0; q < N; q++) {
-				console.log(currentPiece.tetrominos[q])
-			}
-			for (i = -N; i < this.width + N; i++) {
-				if(!this.isOverLapLeftSimu(i,currentPiece)&&!this.isOverLapRightSimu(i,currentPiece)){
-					console.log("i/x=",i,this.isOverLapLeftSimu(i,currentPiece),this.isOverLapRightSimu(i,currentPiece));
+		
+		//console.log(returnList[0],returnList[1],returnList[2],returnList[3],returnList[4])
 
-					for(j = 0; j < this.height; j++){
-						if(this.isOverLapBotSimu(j,currentPiece) || this.isOnPieceSimu(i,j,currentPiece,tab)){
-							j--;
-							console.log("RESULTAT = ",i,j)
-							break;
-						}
-					}
+		let Grille = [[0,0,0,0,0,0,0,0,0,0],
+					[0,0,0,0,0,0,0,0,0,0],
+					[0,0,0,0,0,0,0,0,0,0],
+					[0,0,0,0,0,0,0,0,0,0],
+					[0,0,0,0,0,0,0,0,0,0],
+					[0,0,0,0,0,0,0,0,0,0],
+					[0,0,0,0,0,0,0,0,0,0],
+					[0,0,0,0,0,0,0,0,0,0],
+					[0,0,0,0,0,0,0,0,0,0],
+					[0,0,0,0,0,0,0,0,0,0],
+					[0,0,0,0,0,0,0,0,0,0],
+					[0,0,0,0,0,0,0,0,0,0],
+					[0,0,0,0,0,0,0,0,0,0],
+					[0,0,0,0,0,0,0,0,0,0],
+					[0,0,0,0,0,0,0,0,0,0],
+					[0,0,0,0,0,0,0,0,0,0],
+					[0,0,0,0,0,0,0,0,0,0],
+					[0,0,0,0,0,0,0,0,0,0],
+					[0,0,0,0,0,0,0,0,0,0],
+					[0,0,0,0,0,0,0,0,0,0],
+					[0,0,0,0,0,0,0,0,0,0],
+					[0,0,0,0,0,0,0,0,0,0],
+					[0,0,0,1,0,1,0,0,0,0],
+					[3,5,1,0,3,0,4,4,5,5]]
 
-
-				}
-			}
-
-			
-			currentPiece.rotation();
-			
-			console.log("-------")
-		}*/
-		console.log(r,i,j)
-		console.log(this.calcScore(tab));
-		this.botAction(arraysMove[number]);
-
+		return returnList;
+		
+		//this.botAction(arraysMove[number]);
 		//mergegrid = grid
-
-		//calcScore(grid)
-		app.model.endGame();
+		//this.calcScore(returnList[4])
+		
 	}
 
 	calcScore(grid){
@@ -857,6 +851,7 @@ class Bot {
 			}
 			temp2 = temp1;
 		}
+		//console.log('G',H,N,T,V)
 		return this.coefW * H + this.coefX * N + this.coefY * T + this.coefZ * V;
 	}
 }
