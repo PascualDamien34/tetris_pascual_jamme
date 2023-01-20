@@ -736,9 +736,9 @@ class Bot {
 
 	play(tab,currentPiece){
 		//tab[23] = [0,5,1,2,0,0,4,4,5,5];
-		//if(app.test){	//ici bam mvc
-		//	return;
-		//}
+		if(app.test){	//ici bam mvc
+			return;
+		}
 		let lst = this.checkAllPosibility(tab,currentPiece);
 		//ici //console.log(lst,this.queue)
 		let arraysMove = ["ArrowDown","ArrowUp","ArrowLeft","ArrowRight"," "];
@@ -974,4 +974,30 @@ function clone(originalObject){ //Permet de copier un objet avec les function sa
 
 //var train = true;
 //const app = new Controller(new Model(), new View(new Canvas('dessin',24,10,30),new Canvas('dessinn',4,4,30)), new Bot());
+var train = false;
+const app = new Controller(new Model(), new View(new Canvas('dessin',24,10,30),new Canvas('dessin2',4,4,30)), new Bot());
 
+if(train){
+	
+	var resultat = []
+
+	
+	
+	var tab = [];
+	for (let i = 1; i <= 250; i++) {
+		let name = "app"+i
+		console.log(name,i)
+		tab.push(new Controller(new Model(), new View(new Canvas('dessin'+i,24,10,3),new Canvas('dessin',4,4,3)), new Bot()));
+		tab[i-1].buttonAI();
+	}
+}
+
+
+function final(){
+	var tableau = new Array(250);
+	for (var i = 0; i < resultat.length; i++) {
+		tableau[resultat[i][6]] = resultat[i];
+	}
+	tableau.sort((a, b) => b[0] - a[0]);
+	console.log(tableau)
+}
