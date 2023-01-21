@@ -23,11 +23,9 @@ class Model {
 	bindDisplayTetris (callback) {
 		this.displayTetris = callback;
 	}
-
 	bindBlinkLine (callback) {
 		this.blinkLine = callback;
 	}
-
 	bindUpdateScore (callback) {
 		this.updateScore = callback;
 	}
@@ -38,13 +36,15 @@ class Model {
 
 
 	actionKeyBoard(keyName){
-		//console.log(keyName,'is pressed')
 		switch (keyName) {
 			case "ArrowDown":
 				this.down();
 			break;
 			case "ArrowUp":
-				if(this.currentPiece.y>=0){
+				//derniere modif
+				let clonePiece = clone(this.currentPiece);
+				clonePiece.rotation();
+				if(this.currentPiece.y>=0 && !this.isOnPiece(clonePiece,this.tab)){
 					this.currentPiece.rotation();
 				}
 			break;
@@ -98,21 +98,14 @@ class Model {
 
 		if(this.isOverLapBot(this.currentPiece)){
 			this.replaceBot();
-			//changer de piece
 			this.changePiece();
 		}
 		if(this.isOnPiece(this.currentPiece,this.tab)){
 			this.currentPiece.y -= 1;
-			//changer de piece
 			this.changePiece();
 		}
-
-
 		this.displayTetris(this.mergeGrid(this.currentPiece,this.tab),this.getNextPiece4x4());
-
 		this.checkLine();
-		
-
 	}
 
 	isOverLapLeft(piece){
@@ -172,7 +165,6 @@ class Model {
 	}
 
 	changePiece(){
-		//app.test = true; 		//ici
 		let N = this.currentPiece.getSizeOfMatrice();
 		for (let i = 0; i < N; i++) {
 			for (let j = 0; j < N; j++) {
@@ -189,13 +181,10 @@ class Model {
 		this.nextPiece = new Piece();
 		if(this.isOnPiece(this.currentPiece,this.tab)){
 			this.endGame();
-			console.log("endGame--------")
 		}
 		this.score += 10;
 		this.updateScore(this.score);
 	}
-
-
 	isOnPiece(piece,tab){
 		let N = piece.getSizeOfMatrice();
 		for (let i = 0; i < N; i++) {
@@ -207,10 +196,7 @@ class Model {
 		}
 		return false;
 	}
-
-
 	mergeGrid(piece,tab){
-		//copie du tab
 		let tabCopy = new Array(Model.VERTICAL_SIZE);
 		for(let i = 0 ; i<Model.VERTICAL_SIZE; i++){
 			tabCopy[i] = new Array(Model.HORIZONTAL_SIZE);
@@ -221,7 +207,6 @@ class Model {
 				tabCopy[i][j] = tab[i][j];
 			}
 		}
-
 		let N = piece.getSizeOfMatrice();
 		for (let i = piece.y; i < N + piece.y; i++) {
 			if(i >= Model.VERTICAL_SIZE){
@@ -234,16 +219,13 @@ class Model {
 				if(j>= Model.HORIZONTAL_SIZE){
 					break;
 				}
-				
 				if(piece.tetrominos[i - piece.y][j - piece.x]!=0 && i!=-1){
-					//console.log(i,piece.y,j, piece.x)
 					tabCopy[i][j]=piece.tetrominos[i - piece.y][j - piece.x];
 				}
 			}
 		}
 		return tabCopy;
 	}
-
 	getNextPiece4x4(){
 		let nextPiece4x4 = new Array(4);
 		for (let i = 0; i< nextPiece4x4.length; i++){
@@ -303,7 +285,6 @@ class Model {
 	}
 
 	delLine(i){
-		//a verifier validation line en haut
 		this.blinkLine(i);
 		for (let j = 0; j < Model.HORIZONTAL_SIZE; j++) {
 			this.tab[i][j]=0;
@@ -316,60 +297,6 @@ class Model {
 		}
 		this.score += 100;
 		this.updateScore(this.score);
-	}
-
-	isOverLapLeftSimu(x,currentPiece){
-		let N = currentPiece.getSizeOfMatrice();
-		if(x<0){
-			for (let i = 0; i < x * (-1); i++) {
-				for(let j = 0; j<N; j++){
-					if(currentPiece.tetrominos[j][i]!=0){
-						return true;
-					}
-				}
-			}
-		}
-		return false;
-	}
-
-	isOverLapRightSimu(x,currentPiece){
-		let N = currentPiece.getSizeOfMatrice();
-		if(x + N > Model.HORIZONTAL_SIZE){
-			for (let i = N-1; i > Model.HORIZONTAL_SIZE - x-1; i--) {
-				for(let j = 0; j<N; j++){
-					if(currentPiece.tetrominos[j][i]!=0){
-						return true;
-					}
-				}
-			}
-		}
-		return false;
-	}
-
-	isOverLapBotSimu(y,currentPiece){
-		let N = currentPiece.getSizeOfMatrice();
-		if(y + N > Model.VERTICAL_SIZE){
-			for (let i = Model.VERTICAL_SIZE - y; i < N; i++) {
-				for(let j = 0; j<N; j++){
-					if(currentPiece.tetrominos[i][j]!=0){
-						return true;
-					}
-				}
-			}
-		}
-		return false;
-	}
-
-	isOnPieceSimu(x,y,currentPiece,tab){
-		let N = currentPiece.getSizeOfMatrice();
-		for (let i = 0; i < N; i++) {
-			for (let j = 0; j < N; j++) {
-				if(currentPiece.tetrominos[i][j]!=0 && tab[y+i][x+j]!=0){
-					return true;
-				}
-			}
-		}
-		return false;
 	}
 }
 
@@ -388,7 +315,7 @@ class Piece{
 	constructor(){
 		this.getSizeOfMatrice = this.getSizeOfMatrice.bind(this);
 		let number = Math.floor(Math.random() * 7);
-		
+		this.id = Math.floor(Math.random() * 100000);
 		let N = Piece.tabPieces[number].length;
 		this.tetrominos = new Array(N);
 
@@ -400,7 +327,6 @@ class Piece{
 				this.tetrominos[i][j] = Piece.tabPieces[number][i][j];
 			}
 		}
-
 		if(N == 2){
 			this.y = 0;
 		}else{	
@@ -416,23 +342,17 @@ class Piece{
 
 	rotation() {
 		let N = this.getSizeOfMatrice();
-		// cas de base
 		if (N == 0) {
 			return;
 		}
-		// Transpose la matrice
-		for (let i = 0; i < N; i++)
-		{
+		for (let i = 0; i < N; i++){
 			for (let j = 0; j < i; j++) {
 				let temp = this.tetrominos[i][j];
 				this.tetrominos[i][j] = this.tetrominos[j][i];
 				this.tetrominos[j][i] = temp;
 			}
 		}
-
-		// permute les colonnes
-		for (let i = 0; i < N; i++)
-		{
+		for (let i = 0; i < N; i++){
 			for (let j = 0; j < N/2; j++) {
 				let temp = this.tetrominos[i][j];
 				this.tetrominos[i][j] = this.tetrominos[i][N - j - 1];
@@ -445,8 +365,7 @@ class Piece{
 		return this.tetrominos.length;
 	}
 
-	printMatrix()
-	{
+	printMatrix(){
 		let N = this.getSizeOfMatrice();
 		let string = "";
 		for(let i=0;i<N;i++){
@@ -499,13 +418,12 @@ class Canvas {
 	}
 
 	initCanvasGrid(){
-		//this.ctx.fillStyle = getRandomColor();
 		this.ctx.fillStyle = "#121212";
 		this.ctx.fillRect(0, 0, this.size * this.width, this.size * this.height);
 		this.ctx.strokeStyle='white';
 		this.ctx.lineWidth=0.2;
 		
-		this.ctx.beginPath(); // Start
+		this.ctx.beginPath();
 		for (let col=0; col <= this.width; col++) {
 			this.ctx.moveTo(col*this.size,0);
 			this.ctx.lineTo(col*this.size, this.pixel_height); // Draw a line 
@@ -514,7 +432,7 @@ class Canvas {
 			this.ctx.moveTo(0, line*this.size);
 			this.ctx.lineTo(this.pixel_width, line*this.size); // Draw a line 
 		}
-		this.ctx.stroke(); // End	
+		this.ctx.stroke();
 	}
 
 	drawGrid(grid){
@@ -548,15 +466,12 @@ class Controller {
 	constructor(model, view, bot) {
 		this.model = model;
 		this.view = view;
-		this.bot = bot; 
-		this.test = false;	//ici
+		this.bot = bot;
 
 		this.bindDisplayTetris = this.bindDisplayTetris.bind(this);
 		this.model.bindDisplayTetris(this.bindDisplayTetris);
-
 		this.bindBotAction = this.bindBotAction.bind(this);
 		this.bot.bindBotAction(this.bindBotAction);
-
 		this.bindIsOverLapLeft = this.bindIsOverLapLeft.bind(this);
 		this.bot.bindIsOverLapLeft(this.bindIsOverLapLeft);
 		this.bindIsOverLapRight = this.bindIsOverLapRight.bind(this);
@@ -567,17 +482,12 @@ class Controller {
 		this.bot.bindIsOnPiece(this.bindIsOnPiece);
 		this.bindMergeGrid = this.bindMergeGrid.bind(this);
 		this.bot.bindMergeGrid(this.bindMergeGrid);
-
 		this.bindBlinkLine = this.bindBlinkLine.bind(this);
 		this.model.bindBlinkLine(this.bindBlinkLine);
-
 		this.bindUpdateScore = this.bindUpdateScore.bind(this);
 		this.model.bindUpdateScore(this.bindUpdateScore);
-
 		this.bindEndGame = this.bindEndGame.bind(this);
 		this.model.bindEndGame(this.bindEndGame);
-
-
 
 		this.intervalPlay = setInterval(this.model.play, 100);
 		this.clock = this.clock.bind(this);
@@ -590,11 +500,9 @@ class Controller {
 	bindDisplayTetris (Tetris_value,next_piece) {
 		this.view.displayTetris(Tetris_value,next_piece);
 	}
-
 	bindBotAction (action) {
 		this.model.actionKeyBoard(action);
 	}
-
 	bindIsOverLapLeft (piece) {
 		return this.model.isOverLapLeft(piece);
 	}
@@ -610,24 +518,20 @@ class Controller {
 	bindMergeGrid (piece,tab) {
 		return this.model.mergeGrid(piece,tab);
 	}
-
 	bindBlinkLine (Line_value) {
 		this.view.blinkLine(Line_value);
 	}
-
 	bindUpdateScore (score) {
 		this.view.updateScore(score);
 	}
 
 	bindEndGame(){
 		this.game = false;
-		console.log("End Game");
 		clearInterval(this.intervalBot);
 		clearInterval(this.intervalPlay);
 		clearInterval(this.intervalDown);
 		clearInterval(this.model.downInterval);
 
-		//index2
 		if(train){
 			var l = [];
 			l.push(this.model.score);
@@ -682,7 +586,7 @@ class Controller {
 		}
 		clearInterval(this.intervalDown);
 		if(this.game){
-			this.model.down();	//ici
+			this.model.down();
 			this.intervalDown = setInterval(this.clock, speed);
 		}		
 	}
@@ -693,28 +597,10 @@ class Bot {
 		this.play.bind(this);
 		this.score = 0;
 
-
-		this.coefW = -Math.random(); 	//Min Hauteur max
-		this.coefX = Math.random(); 	//Max Nombre de ligne faite
-		this.coefY = -Math.random();		//Min Trou
-		this.coefZ = -Math.random();		//Min Hauteur variation
-
-		this.coefW = -0.27788784480168816;	//-0.23967712739020697; 	//Min Hauteur max
-		this.coefX = 0.03828500208421597;	//0.016713747415713076; 	//Max Nombre de ligne faite
-		this.coefY = -0.7737833332059656;	//-0.7919406833255183;		//Min Trou
-		this.coefZ = -0.11003878903690407;	//-0.10286078820120625;		//Min Hauteur variation
-
-		//-0.27788784480168816, 0.03828500208421597, -0.7737833332059656, -0.11003878903690407 //22710
-
-		//coefW -0.9238170864140516 coefX 0.4754818260992921 coefY -0.7100678831359575 coefZ -0.6914619791749592
-		//coefW -0.23967712739020697 coefX 0.016713747415713076 coefY -0.7919406833255183 coefZ -0.10286078820120625 //14950
-
-		//this.coefW = -0.1; 	//Min Hauteur max
-		//this.coefX = 1; 	//Max Nombre de ligne faite
-		//this.coefY = -1;		//Min Trou
-		//this.coefZ = -1;		//Min Hauteur variation
-
-		console.log("coefW",this.coefW,"coefX",this.coefX,"coefY",this.coefY,"coefZ",this.coefZ)
+		this.coefW = -0.23967712739020697;  	//-0.27788784480168816;	 	//Min Hauteur max
+		this.coefX = 0.016713747415713076;  	//0.03828500208421597;	 	//Max Nombre de ligne faite
+		this.coefY = -0.7919406833255183;  	//-0.7737833332059656;			//Min Trou
+		this.coefZ = -0.10286078820120625;  	//-0.11003878903690407;			//Min Hauteur variation
 
 		this.height = 24;
 		this.width = 10;
@@ -724,7 +610,6 @@ class Bot {
 	bindBotAction (callback) {
 		this.botAction = callback;
 	}
-
 	bindIsOverLapLeft (callback) {
 		this.isOverLapLeft = callback;
 	}
@@ -741,21 +626,13 @@ class Bot {
 		this.mergeGrid = callback;
 	}
 
-
 	play(tab,currentPiece){
-		//tab[23] = [0,5,1,2,0,0,4,4,5,5];
-		if(app.test){	//ici bam mvc
-			return;
-		}
 		let lst = this.checkAllPosibility(tab,currentPiece);
-		//ici //console.log(lst,this.queue)
 		let arraysMove = ["ArrowDown","ArrowUp","ArrowLeft","ArrowRight"," "];
 
-		
 		if(this.queue.length==0){
 			this.queue.push("ArrowDown");
 			for (let i = 0;i<lst[1];i++) {
-				//ici //console.log("ROTATION",i,lst[1])
 				this.queue.push("ArrowUp");
 			}
 			let calcul = currentPiece.x - lst[2];
@@ -771,7 +648,6 @@ class Bot {
 			}
 			this.queue.push(" ");
 			let length = this.queue.length;
-			//ici //console.log("queue",this.queue,this.queue.length,currentPiece)
 			for (let i = 0;i<length;i++) {	
 				let first = this.queue.shift();
 				this.botAction(first);
@@ -782,34 +658,21 @@ class Bot {
 	}
 
 	checkAllPosibility(tab,currentPiece){
-		//let clonePiece = { ...currentPiece };
-		//clonePiece = JSON.parse(JSON.stringify(currentPiece)); //ne garde pas les fonctions
 		let clonePiece = clone(currentPiece);
-		
-		
-		
-		
 		let number = Math.floor(Math.random() * 5);
 		let N = clonePiece.getSizeOfMatrice();
 		let returnList = [-100000,0,0,0]
 		let r,i,j;
 		for (r = 0; r < 4; r++) {
-			for (let q = 0; q < N; q++) {
-				//console.log(clonePiece.tetrominos[q])
-			}
 			for (i = -N; i < this.width + N; i++) {
 				clonePiece.x = i;
 				if(!this.isOverLapLeft(clonePiece)&&!this.isOverLapRight(clonePiece)){
-					//console.log("i/x=",i,this.isOverLapLeft(clonePiece),this.isOverLapRight(clonePiece));	//CODE SUPPER UTIL
-
 					for(j = 0; j < this.height; j++){
 						clonePiece.y = j;
 						if(this.isOverLapBot(clonePiece) || this.isOnPiece(clonePiece,tab)){
 							clonePiece.y -= 1;
-
 							let tabCopy = this.mergeGrid(clonePiece,tab)
 							let score = this.calcScore(tabCopy);
-							//console.log("score=",score)
 							if(score>returnList[0]){
 								returnList[0] = score;
 								returnList[1] = r;
@@ -817,71 +680,24 @@ class Bot {
 								returnList[3] = j;
 								returnList[4] = tabCopy;
 							}
-
-							/*
-							for(let q = 20; q < this.height; q++){
-								console.log("q",tabCopy[q])
-							}
-							console.log(r,i,j,"----------------------------------------")
-							console.log("RESULTAT = ",i,j)
-							*/
 							break;
 						}
 					}
-
-
 				}
 			}
-
-			
 			clonePiece.rotation();
 		}
-		
-		//console.log(returnList[0],returnList[1],returnList[2],returnList[3],returnList[4])
-
-		let Grille = [[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[3,5,1,2,3,0,4,4,5,5]]
-		//console.log("----")
-		//console.log("score",this.calcScore(Grille))
-		//console.log(returnList)
-
-		//bam le mvc
-		//app.view.canvas.drawGrid(Grille);
-		//app.model.endGame();
 		return returnList;
-		
-		//this.botAction(arraysMove[number]);
-		//mergegrid = grid
-		//this.calcScore(returnList[4])
-		
 	}
 
 	calcScore(grid){
 		let H = 24;	//Hauteur max
 		let N = 0;	//Nombre de ligne faite
 		let T = 0;	//Trou
+		let V = 0;	//Hauteur variation
+		let temp1 = 0;
+		let temp2 = 0;
+
 		for (let i = 0; i < this.height; i++) {
 			let count = 1;
 			for(let j = 0; j < this.width; j++){
@@ -897,14 +713,9 @@ class Bot {
 			}
 			if(count == this.width){
 				N++;
-				//console.log(N);
 			}
 		}
 		H = 24 - H;
-
-		let V = 0;	//Hauteur variation
-		let temp1 = 0;
-		let temp2 = 0;
 		for (let i = 0; i < this.width; i++) {
 			for(let j = 0; j < this.height; j++){
 				if(grid[j][i]!=0){
@@ -925,12 +736,9 @@ class Bot {
 			}
 			temp2 = temp1;
 		}
-
-		//console.log('S',this.coefW * H + this.coefX * N + this.coefY * T + this.coefZ * V,'Hauteur max',H,'Nombre de ligne faite',N,'trou',T,"ca",V)
 		return this.coefW * H + this.coefX * N + this.coefY * T + this.coefZ * V;
 	}
 }
-
 
 document.addEventListener('keyup', (event) => {
 	const nomTouche = event.key;
@@ -975,11 +783,4 @@ function clone(originalObject){ //Permet de copier un objet avec les function sa
   
     return deepCopy; 
 } 
-
-
-//index2
-
-
-//var train = true;
-//const app = new Controller(new Model(), new View(new Canvas('dessin',24,10,30),new Canvas('dessinn',4,4,30)), new Bot());
 

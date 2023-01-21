@@ -1,4 +1,3 @@
-
 class Model {
 
 	static HORIZONTAL_SIZE = 10;
@@ -24,11 +23,9 @@ class Model {
 	bindIsEndGame (callback) {
 		this.game = callback;
 	}
-
 	bindEndGame(callback) {
 		this.endGame = callback;
 	}
-
 
 	actionKeyBoard(keyName){
 		switch (keyName) {
@@ -91,15 +88,12 @@ class Model {
 
 			if(this.isOverLapBot(this.currentPiece)){
 				this.replaceBot();
-				//changer de piece
 				this.changePiece();
 			}
 			if(this.isOnPiece(this.currentPiece,this.tab)){
 				this.currentPiece.y -= 1;
-				//changer de piece
 				this.changePiece();
 			}
-
 			this.checkLine();
 		}
 	}
@@ -161,7 +155,6 @@ class Model {
 	}
 
 	changePiece(){
-
 		let N = this.currentPiece.getSizeOfMatrice();
 		for (let i = 0; i < N; i++) {
 			for (let j = 0; j < N; j++) {
@@ -182,10 +175,7 @@ class Model {
 			this.endGame();
 		}
 		this.score += 10;
-
 	}
-
-
 	isOnPiece(piece,tab){
 		let N = piece.getSizeOfMatrice();
 		for (let i = 0; i < N; i++) {
@@ -197,8 +187,6 @@ class Model {
 		}
 		return false;
 	}
-
-
 	mergeGrid(piece,tab){
 		let tabCopy = new Array(Model.VERTICAL_SIZE);
 		for(let i = 0 ; i<Model.VERTICAL_SIZE; i++){
@@ -210,7 +198,6 @@ class Model {
 				tabCopy[i][j] = tab[i][j];
 			}
 		}
-
 		let N = piece.getSizeOfMatrice();
 		for (let i = piece.y; i < N + piece.y; i++) {
 			if(i >= Model.VERTICAL_SIZE){
@@ -223,7 +210,6 @@ class Model {
 				if(j>= Model.HORIZONTAL_SIZE){
 					break;
 				}
-				
 				if(piece.tetrominos[i - piece.y][j - piece.x]!=0 && i!=-1){
 					tabCopy[i][j]=piece.tetrominos[i - piece.y][j - piece.x];
 				}
@@ -231,7 +217,6 @@ class Model {
 		}
 		return tabCopy;
 	}
-
 	getNextPiece4x4(){
 		let nextPiece4x4 = new Array(4);
 		for (let i = 0; i< nextPiece4x4.length; i++){
@@ -331,7 +316,6 @@ class Piece{
 				this.tetrominos[i][j] = Piece.tabPieces[number][i][j];
 			}
 		}
-
 		if(N == 2){
 			this.y = 0;
 		}else{	
@@ -342,30 +326,21 @@ class Piece{
 		}else{
 			this.x = 4;
 		}
-
-
-
 	}
 
 	rotation() {
 		let N = this.getSizeOfMatrice();
-		// cas de base
 		if (N == 0) {
 			return;
 		}
-		// Transpose la matrice
-		for (let i = 0; i < N; i++)
-		{
+		for (let i = 0; i < N; i++){
 			for (let j = 0; j < i; j++) {
 				let temp = this.tetrominos[i][j];
 				this.tetrominos[i][j] = this.tetrominos[j][i];
 				this.tetrominos[j][i] = temp;
 			}
 		}
-
-		// permute les colonnes
-		for (let i = 0; i < N; i++)
-		{
+		for (let i = 0; i < N; i++){
 			for (let j = 0; j < N/2; j++) {
 				let temp = this.tetrominos[i][j];
 				this.tetrominos[i][j] = this.tetrominos[i][N - j - 1];
@@ -378,8 +353,7 @@ class Piece{
 		return this.tetrominos.length;
 	}
 
-	printMatrix()
-	{
+	printMatrix(){
 		let N = this.getSizeOfMatrice();
 		let string = "";
 		for(let i=0;i<N;i++){
@@ -401,10 +375,8 @@ class Controller {
 
 		this.bindBotAction = this.bindBotAction.bind(this);
 		this.bot.bindBotAction(this.bindBotAction);
-
 		this.bindIsEndGame = this.bindIsEndGame.bind(this);
 		this.model.bindIsEndGame(this.bindIsEndGame);
-
 		this.bindIsOverLapLeft = this.bindIsOverLapLeft.bind(this);
 		this.bot.bindIsOverLapLeft(this.bindIsOverLapLeft);
 		this.bindIsOverLapRight = this.bindIsOverLapRight.bind(this);
@@ -415,7 +387,6 @@ class Controller {
 		this.bot.bindIsOnPiece(this.bindIsOnPiece);
 		this.bindMergeGrid = this.bindMergeGrid.bind(this);
 		this.bot.bindMergeGrid(this.bindMergeGrid);
-
 		this.bindEndGame = this.bindEndGame.bind(this);
 		this.model.bindEndGame(this.bindEndGame);
 
@@ -431,15 +402,12 @@ class Controller {
 	bindAddResultat(callback){
 		this.addResultat = callback;
 	}
-
 	bindIsEndGame () {
 		return this.game;
 	}
-
 	bindBotAction (action) {
 		this.model.actionKeyBoard(action);
 	}
-
 	bindIsOverLapLeft (piece) {
 		return this.model.isOverLapLeft(piece);
 	}
@@ -456,16 +424,12 @@ class Controller {
 		return this.model.mergeGrid(piece,tab);
 	}
 
-
 	bindEndGame(){
 		this.game = false;
-		//console.log("End Game");
 		clearInterval(this.intervalBot);
 		clearInterval(this.intervalPlay);
 		clearInterval(this.intervalDown);
 		clearInterval(this.model.downInterval);
-		
-		//index2
 		let l = [];
 		l.push(this.model.score);
 		l.push(this.bot.coefW);
@@ -473,10 +437,7 @@ class Controller {
 		l.push(this.bot.coefY);
 		l.push(this.bot.coefZ);
 		l.push(this.id);
-		this.addResultat(l);	
-		
-		
-		//console.log(this.id,this.model.score,"coefW",this.bot.coefW,"coefX",this.bot.coefX,"coefY",this.bot.coefY,"coefZ",this.bot.coefZ)
+		this.addResultat(l);
 	}
 
 	buttonAI(){
@@ -509,7 +470,7 @@ class Controller {
 		}
 		clearInterval(this.intervalDown);
 		if(this.game){
-			this.model.down();	//ici
+			this.model.down();
 			this.intervalDown = setInterval(this.clock, speed);
 		}		
 	}
@@ -533,7 +494,6 @@ class Bot {
 	bindBotAction (callback) {
 		this.botAction = callback;
 	}
-
 	bindIsOverLapLeft (callback) {
 		this.isOverLapLeft = callback;
 	}
@@ -550,12 +510,10 @@ class Bot {
 		this.mergeGrid = callback;
 	}
 
-
 	play(tab,currentPiece){
 		let lst = this.checkAllPosibility(tab,currentPiece);
 		let arraysMove = ["ArrowDown","ArrowUp","ArrowLeft","ArrowRight"," "];
 
-		
 		if(this.queue.length==0){
 			this.queue.push("ArrowDown");
 			for (let i = 0;i<lst[1];i++) {
@@ -585,7 +543,6 @@ class Bot {
 
 	checkAllPosibility(tab,currentPiece){
 		let clonePiece = clone(currentPiece);
-
 		let number = Math.floor(Math.random() * 5);
 		let N = clonePiece.getSizeOfMatrice();
 		let returnList = [-100000,0,0,0]
@@ -598,10 +555,8 @@ class Bot {
 						clonePiece.y = j;
 						if(this.isOverLapBot(clonePiece) || this.isOnPiece(clonePiece,tab)){
 							clonePiece.y -= 1;
-
 							let tabCopy = this.mergeGrid(clonePiece,tab)
 							let score = this.calcScore(tabCopy);
-							//console.log("score=",score)
 							if(score>returnList[0]){
 								returnList[0] = score;
 								returnList[1] = r;
@@ -612,15 +567,10 @@ class Bot {
 							break;
 						}
 					}
-
-
 				}
-			}
-
-			
+			}			
 			clonePiece.rotation();
 		}
-
 		return returnList;
 	}
 
@@ -628,6 +578,9 @@ class Bot {
 		let H = 24;	//Hauteur max
 		let N = 0;	//Nombre de ligne faite
 		let T = 0;	//Trou
+		let V = 0;	//Hauteur variation
+		let temp1 = 0;
+		let temp2 = 0;
 		for (let i = 0; i < this.height; i++) {
 			let count = 1;
 			for(let j = 0; j < this.width; j++){
@@ -643,14 +596,9 @@ class Bot {
 			}
 			if(count == this.width){
 				N++;
-				//console.log(N);
 			}
 		}
 		H = 24 - H;
-
-		let V = 0;	//Hauteur variation
-		let temp1 = 0;
-		let temp2 = 0;
 		for (let i = 0; i < this.width; i++) {
 			for(let j = 0; j < this.height; j++){
 				if(grid[j][i]!=0){
@@ -671,42 +619,9 @@ class Bot {
 			}
 			temp2 = temp1;
 		}
-
-		//console.log('S',this.coefW * H + this.coefX * N + this.coefY * T + this.coefZ * V,'Hauteur max',H,'Nombre de ligne faite',N,'trou',T,"ca",V)
 		return this.coefW * H + this.coefX * N + this.coefY * T + this.coefZ * V;
 	}
 }
-
-
-
-
-
-
-function clone(originalObject){ //Permet de copier un objet avec les function sans garder l'héredité
-    if((typeof originalObject !== 'object') || originalObject === null){ 
-        throw new TypeError("originalObject parameter must be an object which is not null"); 
-    } 
-  
-    var deepCopy = JSON.parse(JSON.stringify(originalObject)); 
-  
-    // Une petite récursivité 
-    function deepProto(originalObject, deepCopy){ 
-        deepCopy.__proto__ = Object.create(originalObject.constructor.prototype); 
-        for(var attribute in originalObject){ 
-            if(typeof originalObject[attribute] === 'object' && originalObject[attribute] !== null){ 
-                deepProto(originalObject[attribute], deepCopy[attribute]); 
-            } 
-        } 
-    } 
-    deepProto(originalObject, deepCopy); 
-  
-    return deepCopy; 
-} 
-
-
-
-
-
 
 class Genetique{
 	constructor(nombreTetris){
@@ -715,12 +630,10 @@ class Genetique{
 		this.appTableau = new Array(nombreTetris);
 		for (let i = 0; i < this.nombreTetris; i++) {
 			this.appTableau[i] = new Controller(new Model(), new Bot(-Math.random(),Math.random(),-Math.random(),-Math.random()),i);
-			//console.log(this.appTableau)
 			this.appTableau[i].buttonAI();
 			this.bindAddResultat = this.bindAddResultat.bind(this);
 			this.appTableau[i].bindAddResultat(this.bindAddResultat);
 		}
-
 		this.finalTableau = new Array(this.nombreTetris);
 		this.finalTableau.fill(0);
 		this.resultat = [];
@@ -756,15 +669,12 @@ class Genetique{
 		this.appTableau = new Array(this.nombreTetris);
 		for(let i = 0;i<this.nombreTetris/(5/2); i++){
 			this.appTableau[i] = new Controller(new Model(), new Bot(this.finalTableau[i][1],this.finalTableau[i][2],this.finalTableau[i][3],this.finalTableau[i][4]),i);
-			//console.log('first=',i)
 		}
 		for(let i = 0;i<this.nombreTetris/(5/2); i++){
 			this.appTableau[i+(this.nombreTetris/(5/2))] = new Controller(new Model(), new Bot((this.finalTableau[i][1]+this.finalTableau[i+1][1])/2,(this.finalTableau[i][2]+this.finalTableau[i+1][2])/2,(this.finalTableau[i][3]+this.finalTableau[i+1][3])/2,(this.finalTableau[i][4]+this.finalTableau[i+1][4])/2),i+(this.nombreTetris/(5/2)));
-			//console.log('second=',i+(this.nombreTetris/(5/2)-1))
 		}
 		for(let i = 0;i<(this.nombreTetris/5); i++){
 			this.appTableau[i+(this.nombreTetris/(5/4))] = new Controller(new Model(), new Bot(-Math.random(),Math.random(),-Math.random(),-Math.random()),i+(this.nombreTetris/(5/4)));
-			//console.log('third=',i+(this.nombreTetris/(5/4)))
 		}
 		for (let i = 0; i < this.nombreTetris; i++) {
 			console.log("final",this.appTableau[i])
@@ -783,5 +693,25 @@ class Genetique{
 	}
 }
 
+function clone(originalObject){ //Permet de copier un objet avec les function sans garder l'héredité
+    if((typeof originalObject !== 'object') || originalObject === null){ 
+        throw new TypeError("originalObject parameter must be an object which is not null"); 
+    } 
+  
+    var deepCopy = JSON.parse(JSON.stringify(originalObject)); 
+  
+    // Une petite récursivité 
+    function deepProto(originalObject, deepCopy){ 
+        deepCopy.__proto__ = Object.create(originalObject.constructor.prototype); 
+        for(var attribute in originalObject){ 
+            if(typeof originalObject[attribute] === 'object' && originalObject[attribute] !== null){ 
+                deepProto(originalObject[attribute], deepCopy[attribute]); 
+            } 
+        } 
+    } 
+    deepProto(originalObject, deepCopy); 
+  
+    return deepCopy; 
+} 
 
 const jeu = new Genetique(500);
