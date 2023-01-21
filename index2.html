@@ -20,15 +20,12 @@
 			box-sizing: border-box;
 			margin: 0;
 			padding: 0;
+
 		}
 
 		body {
 			background: rgb(18, 18, 18);
 			color: rgb(255, 255, 255);
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			min-height: 100vh;
 		}
 
 		.container__0 {
@@ -108,7 +105,30 @@
 		document.getElementById('minicanvas').innerHTML = text;
 	</script>
 	<script type="text/javascript" src="test.js"></script>
+	<script type="text/javascript">
+		var train = true;
+		const app = new Controller(new Model(), new View(new Canvas('dessin',24,10,30),new Canvas('dessinn',4,4,30)), new Bot());
+		
+		var resultat = []
+			
+		var tab = [];
+		for (let i = 1; i <= 250; i++) {
+			let name = "app"+i
+			console.log(name,i)
+			tab.push(new Controller(new Model(), new View(new Canvas('dessin'+i,24,10,3),new Canvas('dessin',4,4,3)), new Bot()));
+			tab[i-1].buttonAI();
+		}
+		
+		function final(){
+			var tableau = new Array(250);
+			for (var i = 0; i < resultat.length; i++) {
+				tableau[resultat[i][6]] = resultat[i];
+			}
+			tableau.sort((a, b) => b[0] - a[0]);
+			console.log(tableau)
+		}
 
+	</script>
 
 </body>
 </html>

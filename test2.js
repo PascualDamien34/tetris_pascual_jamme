@@ -1,3 +1,4 @@
+
 class Model {
 
 	static HORIZONTAL_SIZE = 10;
@@ -19,17 +20,9 @@ class Model {
 
 		this.score = 0;
 	}
-	
-	bindDisplayTetris (callback) {
-		this.displayTetris = callback;
-	}
 
-	bindBlinkLine (callback) {
-		this.blinkLine = callback;
-	}
-
-	bindUpdateScore (callback) {
-		this.updateScore = callback;
+	bindIsEndGame (callback) {
+		this.game = callback;
 	}
 
 	bindEndGame(callback) {
@@ -38,7 +31,6 @@ class Model {
 
 
 	actionKeyBoard(keyName){
-		//console.log(keyName,'is pressed')
 		switch (keyName) {
 			case "ArrowDown":
 				this.down();
@@ -89,30 +81,27 @@ class Model {
 	}
 
 	play(){
-		if(this.isOverLapLeft(this.currentPiece)){
-			this.replaceLeft()
+		if(this.game){
+			if(this.isOverLapLeft(this.currentPiece)){
+				this.replaceLeft()
+			}
+			if(this.isOverLapRight(this.currentPiece)){
+				this.replaceRight()
+			}
+
+			if(this.isOverLapBot(this.currentPiece)){
+				this.replaceBot();
+				//changer de piece
+				this.changePiece();
+			}
+			if(this.isOnPiece(this.currentPiece,this.tab)){
+				this.currentPiece.y -= 1;
+				//changer de piece
+				this.changePiece();
+			}
+
+			this.checkLine();
 		}
-		if(this.isOverLapRight(this.currentPiece)){
-			this.replaceRight()
-		}
-
-		if(this.isOverLapBot(this.currentPiece)){
-			this.replaceBot();
-			//changer de piece
-			this.changePiece();
-		}
-		if(this.isOnPiece(this.currentPiece,this.tab)){
-			this.currentPiece.y -= 1;
-			//changer de piece
-			this.changePiece();
-		}
-
-
-		this.displayTetris(this.mergeGrid(this.currentPiece,this.tab),this.getNextPiece4x4());
-
-		this.checkLine();
-		
-
 	}
 
 	isOverLapLeft(piece){
@@ -172,7 +161,7 @@ class Model {
 	}
 
 	changePiece(){
-		//app.test = true; 		//ici
+
 		let N = this.currentPiece.getSizeOfMatrice();
 		for (let i = 0; i < N; i++) {
 			for (let j = 0; j < N; j++) {
@@ -185,14 +174,15 @@ class Model {
 				}
 			}
 		}
-		this.currentPiece = this.nextPiece;
-		this.nextPiece = new Piece();
+		if(this.game){
+			this.currentPiece = this.nextPiece;
+			this.nextPiece = new Piece();
+		}
 		if(this.isOnPiece(this.currentPiece,this.tab)){
 			this.endGame();
-			console.log("endGame--------")
 		}
 		this.score += 10;
-		this.updateScore(this.score);
+
 	}
 
 
@@ -210,7 +200,6 @@ class Model {
 
 
 	mergeGrid(piece,tab){
-		//copie du tab
 		let tabCopy = new Array(Model.VERTICAL_SIZE);
 		for(let i = 0 ; i<Model.VERTICAL_SIZE; i++){
 			tabCopy[i] = new Array(Model.HORIZONTAL_SIZE);
@@ -236,7 +225,6 @@ class Model {
 				}
 				
 				if(piece.tetrominos[i - piece.y][j - piece.x]!=0 && i!=-1){
-					//console.log(i,piece.y,j, piece.x)
 					tabCopy[i][j]=piece.tetrominos[i - piece.y][j - piece.x];
 				}
 			}
@@ -303,8 +291,6 @@ class Model {
 	}
 
 	delLine(i){
-		//a verifier validation line en haut
-		this.blinkLine(i);
 		for (let j = 0; j < Model.HORIZONTAL_SIZE; j++) {
 			this.tab[i][j]=0;
 		}
@@ -315,61 +301,6 @@ class Model {
 			i--;
 		}
 		this.score += 100;
-		this.updateScore(this.score);
-	}
-
-	isOverLapLeftSimu(x,currentPiece){
-		let N = currentPiece.getSizeOfMatrice();
-		if(x<0){
-			for (let i = 0; i < x * (-1); i++) {
-				for(let j = 0; j<N; j++){
-					if(currentPiece.tetrominos[j][i]!=0){
-						return true;
-					}
-				}
-			}
-		}
-		return false;
-	}
-
-	isOverLapRightSimu(x,currentPiece){
-		let N = currentPiece.getSizeOfMatrice();
-		if(x + N > Model.HORIZONTAL_SIZE){
-			for (let i = N-1; i > Model.HORIZONTAL_SIZE - x-1; i--) {
-				for(let j = 0; j<N; j++){
-					if(currentPiece.tetrominos[j][i]!=0){
-						return true;
-					}
-				}
-			}
-		}
-		return false;
-	}
-
-	isOverLapBotSimu(y,currentPiece){
-		let N = currentPiece.getSizeOfMatrice();
-		if(y + N > Model.VERTICAL_SIZE){
-			for (let i = Model.VERTICAL_SIZE - y; i < N; i++) {
-				for(let j = 0; j<N; j++){
-					if(currentPiece.tetrominos[i][j]!=0){
-						return true;
-					}
-				}
-			}
-		}
-		return false;
-	}
-
-	isOnPieceSimu(x,y,currentPiece,tab){
-		let N = currentPiece.getSizeOfMatrice();
-		for (let i = 0; i < N; i++) {
-			for (let j = 0; j < N; j++) {
-				if(currentPiece.tetrominos[i][j]!=0 && tab[y+i][x+j]!=0){
-					return true;
-				}
-			}
-		}
-		return false;
 	}
 }
 
@@ -388,7 +319,7 @@ class Piece{
 	constructor(){
 		this.getSizeOfMatrice = this.getSizeOfMatrice.bind(this);
 		let number = Math.floor(Math.random() * 7);
-		
+		this.id = Math.floor(Math.random() * 100000);
 		let N = Piece.tabPieces[number].length;
 		this.tetrominos = new Array(N);
 
@@ -411,6 +342,8 @@ class Piece{
 		}else{
 			this.x = 4;
 		}
+
+
 
 	}
 
@@ -459,103 +392,18 @@ class Piece{
 	}
 }
 
-class View {
-	constructor(canvas,canvas2,preview) {
-		this.canvas = canvas;
-		this.canvas2 = canvas2;
-		this.preview = preview;
-	}
-	
-	displayTetris (Tetris_value,next_piece) {
-		this.canvas.initCanvasGrid();
-		this.canvas.drawGrid(Tetris_value);
-		if(this.preview){
-			this.canvas2.initCanvasGrid();
-			this.canvas2.drawGrid(next_piece);
-		}
-	}
 
-	blinkLine(Line_value){
-		this.canvas.valideLine(Line_value);
-	}
-
-	updateScore(score){
-		document.getElementById('score').innerHTML = score;
-	}
-}
-
-class Canvas {
-
-	static PALETTE = ['#0ad6ff','#1DCD23', "#bc13fe", "#cfff04", "#fe019a", "#ff073a",'#2243FF'];
-	static BLOCK_SPACE = 1;
-
-	constructor(id,height,width,size) {
-		this.height = height;
-		this.width = width;
-		this.size = size;
-		this.pixel_height = height * this.size;
-		this.pixel_width =  width * this.size;
-		this.ctx = document.getElementById(id).getContext('2d');
-	}
-
-	initCanvasGrid(){
-		//this.ctx.fillStyle = getRandomColor();
-		this.ctx.fillStyle = "#121212";
-		this.ctx.fillRect(0, 0, this.size * this.width, this.size * this.height);
-		this.ctx.strokeStyle='white';
-		this.ctx.lineWidth=0.2;
-		
-		this.ctx.beginPath(); // Start
-		for (let col=0; col <= this.width; col++) {
-			this.ctx.moveTo(col*this.size,0);
-			this.ctx.lineTo(col*this.size, this.pixel_height); // Draw a line 
-		}
-		for (let line=0; line <= this.height; line++) {
-			this.ctx.moveTo(0, line*this.size);
-			this.ctx.lineTo(this.pixel_width, line*this.size); // Draw a line 
-		}
-		this.ctx.stroke(); // End	
-	}
-
-	drawGrid(grid){
-		for (let i = 0; i < this.height; i++) {
-			for (let j = 0; j < this.width; j++) {
-				if(grid[i][j]!=0){
-					this.ctx.fillStyle = Canvas.PALETTE[grid[i][j]-1];//-1 car les pieces commencent à 1 sur le tableau de pieces
-					this.ctx.fillRect(j*this.size + Canvas.BLOCK_SPACE, i*this.size + Canvas.BLOCK_SPACE, this.size - 2 * Canvas.BLOCK_SPACE, this.size - 2 * Canvas.BLOCK_SPACE);
-				}
-			}
-		}
-	}
-
-	async valideLine(line){
-		for (let i = 0; i <4; i++) {
-			for (let j = 0; j < this.width; j++) {
-				if (i % 2 == 0){
-					this.ctx.fillStyle = "white";
-					this.ctx.fillRect(j*this.size+Canvas.BLOCK_SPACE, line*this.size+Canvas.BLOCK_SPACE, this.size-2*Canvas.BLOCK_SPACE, this.size-2*Canvas.BLOCK_SPACE);
-				}else{
-					this.ctx.fillStyle = "#121212";
-					this.ctx.fillRect(j*this.size+Canvas.BLOCK_SPACE, line*this.size+Canvas.BLOCK_SPACE, this.size-2*Canvas.BLOCK_SPACE, this.size-2*Canvas.BLOCK_SPACE);
-				}
-			}
-			await sleep(100);
-		}
-	}
-}
-	
 class Controller {
-	constructor(model, view, bot) {
+	constructor(model, bot, i) {
 		this.model = model;
-		this.view = view;
-		this.bot = bot; 
-		this.test = false;	//ici
-
-		this.bindDisplayTetris = this.bindDisplayTetris.bind(this);
-		this.model.bindDisplayTetris(this.bindDisplayTetris);
+		this.bot = bot;
+		this.id = i;
 
 		this.bindBotAction = this.bindBotAction.bind(this);
 		this.bot.bindBotAction(this.bindBotAction);
+
+		this.bindIsEndGame = this.bindIsEndGame.bind(this);
+		this.model.bindIsEndGame(this.bindIsEndGame);
 
 		this.bindIsOverLapLeft = this.bindIsOverLapLeft.bind(this);
 		this.bot.bindIsOverLapLeft(this.bindIsOverLapLeft);
@@ -568,17 +416,10 @@ class Controller {
 		this.bindMergeGrid = this.bindMergeGrid.bind(this);
 		this.bot.bindMergeGrid(this.bindMergeGrid);
 
-		this.bindBlinkLine = this.bindBlinkLine.bind(this);
-		this.model.bindBlinkLine(this.bindBlinkLine);
-
-		this.bindUpdateScore = this.bindUpdateScore.bind(this);
-		this.model.bindUpdateScore(this.bindUpdateScore);
-
 		this.bindEndGame = this.bindEndGame.bind(this);
 		this.model.bindEndGame(this.bindEndGame);
 
-
-
+		this.intervalBot;
 		this.intervalPlay = setInterval(this.model.play, 100);
 		this.clock = this.clock.bind(this);
 		this.playBot = this.playBot.bind(this);
@@ -586,9 +427,13 @@ class Controller {
 		this.game = true;
 		this.botActivate = false;
 	}
-	 
-	bindDisplayTetris (Tetris_value,next_piece) {
-		this.view.displayTetris(Tetris_value,next_piece);
+
+	bindAddResultat(callback){
+		this.addResultat = callback;
+	}
+
+	bindIsEndGame () {
+		return this.game;
 	}
 
 	bindBotAction (action) {
@@ -611,51 +456,33 @@ class Controller {
 		return this.model.mergeGrid(piece,tab);
 	}
 
-	bindBlinkLine (Line_value) {
-		this.view.blinkLine(Line_value);
-	}
-
-	bindUpdateScore (score) {
-		this.view.updateScore(score);
-	}
 
 	bindEndGame(){
 		this.game = false;
-		console.log("End Game");
+		//console.log("End Game");
 		clearInterval(this.intervalBot);
 		clearInterval(this.intervalPlay);
 		clearInterval(this.intervalDown);
 		clearInterval(this.model.downInterval);
-
+		
 		//index2
-		if(train){
-			var l = [];
-			l.push(this.model.score);
-			l.push(this.bot.coefW);
-			l.push(this.bot.coefX);
-			l.push(this.bot.coefY);
-			l.push(this.bot.coefZ);
-			l.push(this)
-			let score = 0;
-			for (let i = 1; i <= 250; i++) {
-				if(this == tab[i-1]){
-					l.push(i-1)
-				}
-				if(tab[i-1].model.score>score){
-					score = tab[i-1].model.score
-				}
-			}
-			resultat.push(l)
-			console.log(score)
-			console.log("coefW",this.bot.coefW,"coefX",this.bot.coefX,"coefY",this.bot.coefY,"coefZ",this.bot.coefZ)
-			document.getElementById('score2').innerHTML = score;
-		}
+		let l = [];
+		l.push(this.model.score);
+		l.push(this.bot.coefW);
+		l.push(this.bot.coefX);
+		l.push(this.bot.coefY);
+		l.push(this.bot.coefZ);
+		l.push(this.id);
+		this.addResultat(l);	
+		
+		
+		//console.log(this.id,this.model.score,"coefW",this.bot.coefW,"coefX",this.bot.coefX,"coefY",this.bot.coefY,"coefZ",this.bot.coefZ)
 	}
 
 	buttonAI(){
 		this.botActivate = !this.botActivate;
 		if(this.botActivate){
-			this.intervalBot = setInterval(this.playBot, 100); //ici à mettre 20
+			this.intervalBot = setInterval(this.playBot, 1); //ici à mettre 20
 		}else{
 			clearInterval(this.intervalBot);
 			this.intervalBot = null;
@@ -689,32 +516,14 @@ class Controller {
 }
 
 class Bot {
-	constructor() {
+	constructor(coefW,coefX,coefY,coefZ) {
 		this.play.bind(this);
 		this.score = 0;
 
-
-		this.coefW = -Math.random(); 	//Min Hauteur max
-		this.coefX = Math.random(); 	//Max Nombre de ligne faite
-		this.coefY = -Math.random();		//Min Trou
-		this.coefZ = -Math.random();		//Min Hauteur variation
-
-		this.coefW = -0.27788784480168816;	//-0.23967712739020697; 	//Min Hauteur max
-		this.coefX = 0.03828500208421597;	//0.016713747415713076; 	//Max Nombre de ligne faite
-		this.coefY = -0.7737833332059656;	//-0.7919406833255183;		//Min Trou
-		this.coefZ = -0.11003878903690407;	//-0.10286078820120625;		//Min Hauteur variation
-
-		//-0.27788784480168816, 0.03828500208421597, -0.7737833332059656, -0.11003878903690407 //22710
-
-		//coefW -0.9238170864140516 coefX 0.4754818260992921 coefY -0.7100678831359575 coefZ -0.6914619791749592
-		//coefW -0.23967712739020697 coefX 0.016713747415713076 coefY -0.7919406833255183 coefZ -0.10286078820120625 //14950
-
-		//this.coefW = -0.1; 	//Min Hauteur max
-		//this.coefX = 1; 	//Max Nombre de ligne faite
-		//this.coefY = -1;		//Min Trou
-		//this.coefZ = -1;		//Min Hauteur variation
-
-		console.log("coefW",this.coefW,"coefX",this.coefX,"coefY",this.coefY,"coefZ",this.coefZ)
+		this.coefW = coefW; 	//Min Hauteur max
+		this.coefX = coefX; 	//Max Nombre de ligne faite
+		this.coefY = coefY;		//Min Trou
+		this.coefZ = coefZ;		//Min Hauteur variation
 
 		this.height = 24;
 		this.width = 10;
@@ -743,19 +552,13 @@ class Bot {
 
 
 	play(tab,currentPiece){
-		//tab[23] = [0,5,1,2,0,0,4,4,5,5];
-		if(app.test){	//ici bam mvc
-			return;
-		}
 		let lst = this.checkAllPosibility(tab,currentPiece);
-		//ici //console.log(lst,this.queue)
 		let arraysMove = ["ArrowDown","ArrowUp","ArrowLeft","ArrowRight"," "];
 
 		
 		if(this.queue.length==0){
 			this.queue.push("ArrowDown");
 			for (let i = 0;i<lst[1];i++) {
-				//ici //console.log("ROTATION",i,lst[1])
 				this.queue.push("ArrowUp");
 			}
 			let calcul = currentPiece.x - lst[2];
@@ -771,7 +574,6 @@ class Bot {
 			}
 			this.queue.push(" ");
 			let length = this.queue.length;
-			//ici //console.log("queue",this.queue,this.queue.length,currentPiece)
 			for (let i = 0;i<length;i++) {	
 				let first = this.queue.shift();
 				this.botAction(first);
@@ -782,26 +584,16 @@ class Bot {
 	}
 
 	checkAllPosibility(tab,currentPiece){
-		//let clonePiece = { ...currentPiece };
-		//clonePiece = JSON.parse(JSON.stringify(currentPiece)); //ne garde pas les fonctions
 		let clonePiece = clone(currentPiece);
-		
-		
-		
-		
+
 		let number = Math.floor(Math.random() * 5);
 		let N = clonePiece.getSizeOfMatrice();
 		let returnList = [-100000,0,0,0]
 		let r,i,j;
 		for (r = 0; r < 4; r++) {
-			for (let q = 0; q < N; q++) {
-				//console.log(clonePiece.tetrominos[q])
-			}
 			for (i = -N; i < this.width + N; i++) {
 				clonePiece.x = i;
 				if(!this.isOverLapLeft(clonePiece)&&!this.isOverLapRight(clonePiece)){
-					//console.log("i/x=",i,this.isOverLapLeft(clonePiece),this.isOverLapRight(clonePiece));	//CODE SUPPER UTIL
-
 					for(j = 0; j < this.height; j++){
 						clonePiece.y = j;
 						if(this.isOverLapBot(clonePiece) || this.isOnPiece(clonePiece,tab)){
@@ -817,14 +609,6 @@ class Bot {
 								returnList[3] = j;
 								returnList[4] = tabCopy;
 							}
-
-							/*
-							for(let q = 20; q < this.height; q++){
-								console.log("q",tabCopy[q])
-							}
-							console.log(r,i,j,"----------------------------------------")
-							console.log("RESULTAT = ",i,j)
-							*/
 							break;
 						}
 					}
@@ -836,46 +620,8 @@ class Bot {
 			
 			clonePiece.rotation();
 		}
-		
-		//console.log(returnList[0],returnList[1],returnList[2],returnList[3],returnList[4])
 
-		let Grille = [[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[0,0,0,0,0,0,0,0,0,0],
-					[3,5,1,2,3,0,4,4,5,5]]
-		//console.log("----")
-		//console.log("score",this.calcScore(Grille))
-		//console.log(returnList)
-
-		//bam le mvc
-		//app.view.canvas.drawGrid(Grille);
-		//app.model.endGame();
 		return returnList;
-		
-		//this.botAction(arraysMove[number]);
-		//mergegrid = grid
-		//this.calcScore(returnList[4])
-		
 	}
 
 	calcScore(grid){
@@ -932,28 +678,9 @@ class Bot {
 }
 
 
-document.addEventListener('keyup', (event) => {
-	const nomTouche = event.key;
-	app.keyboardEvent(nomTouche);	
-}, false);
 
-let btn = document.getElementById('AI_button');
-btn.addEventListener('click', (event) => {
-	app.buttonAI();
-	btn.blur();
-});
 
-function getRandomColor() {
-	let letters = '0123456789ABCDEF';
-	let color = '#';
-	for (let i = 0; i < 6; i++) {
-		color += letters[Math.floor(Math.random() * 16)];
-	}
-	return color;
-}
-function sleep(ms) {
-	return new Promise(resolve => setTimeout(resolve, ms));
-}
+
 
 function clone(originalObject){ //Permet de copier un objet avec les function sans garder l'héredité
     if((typeof originalObject !== 'object') || originalObject === null){ 
@@ -977,9 +704,84 @@ function clone(originalObject){ //Permet de copier un objet avec les function sa
 } 
 
 
-//index2
 
 
-//var train = true;
-//const app = new Controller(new Model(), new View(new Canvas('dessin',24,10,30),new Canvas('dessinn',4,4,30)), new Bot());
 
+
+class Genetique{
+	constructor(nombreTetris){
+		this.iteration = 0;
+		this.nombreTetris = nombreTetris;
+		this.appTableau = new Array(nombreTetris);
+		for (let i = 0; i < this.nombreTetris; i++) {
+			this.appTableau[i] = new Controller(new Model(), new Bot(-Math.random(),Math.random(),-Math.random(),-Math.random()),i);
+			//console.log(this.appTableau)
+			this.appTableau[i].buttonAI();
+			this.bindAddResultat = this.bindAddResultat.bind(this);
+			this.appTableau[i].bindAddResultat(this.bindAddResultat);
+		}
+
+		this.finalTableau = new Array(this.nombreTetris);
+		this.finalTableau.fill(0);
+		this.resultat = [];
+		this.final = this.final.bind(this);
+		this.intervalFinal = setInterval(this.final, 1000);
+	}
+
+	bindAddResultat (l) {
+		this.resultat.push(l)
+	}
+
+	final(){	
+		for (let i = 0; i < this.resultat.length; i++) {
+			this.finalTableau[this.resultat[i][5]] = this.resultat[i];
+		}
+		let count = 0;
+		for(let i = 0; i<this.nombreTetris;i++){
+			if(this.finalTableau[i]!=0){
+				count++;
+			}
+		}
+		console.log('Bip Boup',count)
+		if(count==this.nombreTetris){
+			this.finalTableau.sort((a, b) => b[0] - a[0]);
+			console.log(this.finalTableau);
+			console.log("Fin !")
+			clearInterval(this.intervalFinal)
+			this.reproduction()
+		}
+	}
+
+	reproduction(){
+		this.appTableau = new Array(this.nombreTetris);
+		for(let i = 0;i<this.nombreTetris/(5/2); i++){
+			this.appTableau[i] = new Controller(new Model(), new Bot(this.finalTableau[i][1],this.finalTableau[i][2],this.finalTableau[i][3],this.finalTableau[i][4]),i);
+			//console.log('first=',i)
+		}
+		for(let i = 0;i<this.nombreTetris/(5/2); i++){
+			this.appTableau[i+(this.nombreTetris/(5/2))] = new Controller(new Model(), new Bot((this.finalTableau[i][1]+this.finalTableau[i+1][1])/2,(this.finalTableau[i][2]+this.finalTableau[i+1][2])/2,(this.finalTableau[i][3]+this.finalTableau[i+1][3])/2,(this.finalTableau[i][4]+this.finalTableau[i+1][4])/2),i+(this.nombreTetris/(5/2)));
+			//console.log('second=',i+(this.nombreTetris/(5/2)-1))
+		}
+		for(let i = 0;i<(this.nombreTetris/5); i++){
+			this.appTableau[i+(this.nombreTetris/(5/4))] = new Controller(new Model(), new Bot(-Math.random(),Math.random(),-Math.random(),-Math.random()),i+(this.nombreTetris/(5/4)));
+			//console.log('third=',i+(this.nombreTetris/(5/4)))
+		}
+		for (let i = 0; i < this.nombreTetris; i++) {
+			console.log("final",this.appTableau[i])
+			this.appTableau[i].buttonAI();
+			this.bindAddResultat = this.bindAddResultat.bind(this);
+			this.appTableau[i].bindAddResultat(this.bindAddResultat);
+		}
+		this.resultat = [];
+		this.finalTableau = new Array(this.nombreTetris);
+		this.finalTableau.fill(0);
+		if(this.iteration<10){
+			this.intervalFinal = setInterval(this.final, 1000);
+		}
+		this.iteration++;
+		console.log("iteration",this.iteration)
+	}
+}
+
+
+const jeu = new Genetique(500);
