@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document de la mort qui tue pour de faux</title>
+	<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<body>
+		
+	<div id="mvc" class="container__0">
+
+		<div id="minicanvas">
+
+		</div>
+
+		
+		
+		<div id="space">
+		</div>
+		<div>
+			<h1 id="score2">Score 000</h1>
+		</div>
+	</div>
+	<script type="text/javascript">
+		var text = "";
+		for (var i = 0; i < 25; i++) {
+			text += "<div>";
+			for (var j = 0; j < 10; j++) {
+				var cal = i*10+j+1;
+				text += '<canvas id="dessin'+cal+'" height="72px" width="30px"></canvas>'
+			}
+			text += "</div>";
+		}
+		document.getElementById('minicanvas').innerHTML = text;
+	</script>
+	<script type="text/javascript" src="Multiview.js"></script>
+</body>
+</html>

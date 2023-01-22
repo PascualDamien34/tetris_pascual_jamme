@@ -26,10 +26,6 @@ class Model {
 	bindBlinkLine (callback) {
 		this.blinkLine = callback;
 	}
-	bindUpdateScore (callback) {
-		this.updateScore = callback;
-	}
-
 	bindEndGame(callback) {
 		this.endGame = callback;
 	}
@@ -183,7 +179,6 @@ class Model {
 			this.endGame();
 		}
 		this.score += 10;
-		this.updateScore(this.score);
 	}
 	isOnPiece(piece,tab){
 		let N = piece.getSizeOfMatrice();
@@ -296,7 +291,6 @@ class Model {
 			i--;
 		}
 		this.score += 100;
-		this.updateScore(this.score);
 	}
 }
 
@@ -379,27 +373,17 @@ class Piece{
 }
 
 class View {
-	constructor(canvas,canvas2,preview) {
+	constructor(canvas) {
 		this.canvas = canvas;
-		this.canvas2 = canvas2;
-		this.preview = preview;
 	}
 	
 	displayTetris (Tetris_value,next_piece) {
 		this.canvas.initCanvasGrid();
 		this.canvas.drawGrid(Tetris_value);
-		if(this.preview){
-			this.canvas2.initCanvasGrid();
-			this.canvas2.drawGrid(next_piece);
-		}
 	}
 
 	blinkLine(Line_value){
 		this.canvas.valideLine(Line_value);
-	}
-
-	updateScore(score){
-		document.getElementById('score').innerHTML = score;
 	}
 }
 
@@ -484,8 +468,6 @@ class Controller {
 		this.bot.bindMergeGrid(this.bindMergeGrid);
 		this.bindBlinkLine = this.bindBlinkLine.bind(this);
 		this.model.bindBlinkLine(this.bindBlinkLine);
-		this.bindUpdateScore = this.bindUpdateScore.bind(this);
-		this.model.bindUpdateScore(this.bindUpdateScore);
 		this.bindEndGame = this.bindEndGame.bind(this);
 		this.model.bindEndGame(this.bindEndGame);
 
@@ -521,9 +503,6 @@ class Controller {
 	bindBlinkLine (Line_value) {
 		this.view.blinkLine(Line_value);
 	}
-	bindUpdateScore (score) {
-		this.view.updateScore(score);
-	}
 
 	bindEndGame(){
 		this.game = false;
@@ -532,28 +511,28 @@ class Controller {
 		clearInterval(this.intervalDown);
 		clearInterval(this.model.downInterval);
 
-		if(train){
-			var l = [];
-			l.push(this.model.score);
-			l.push(this.bot.coefW);
-			l.push(this.bot.coefX);
-			l.push(this.bot.coefY);
-			l.push(this.bot.coefZ);
-			l.push(this)
-			let score = 0;
-			for (let i = 1; i <= 250; i++) {
-				if(this == tab[i-1]){
-					l.push(i-1)
-				}
-				if(tab[i-1].model.score>score){
-					score = tab[i-1].model.score
-				}
+		
+		var l = [];
+		l.push(this.model.score);
+		l.push(this.bot.coefW);
+		l.push(this.bot.coefX);
+		l.push(this.bot.coefY);
+		l.push(this.bot.coefZ);
+		l.push(this)
+		let score = 0;
+		for (let i = 1; i <= 250; i++) {
+			if(this == tab[i-1]){
+				l.push(i-1)
 			}
-			resultat.push(l)
-			console.log(score)
-			console.log("coefW",this.bot.coefW,"coefX",this.bot.coefX,"coefY",this.bot.coefY,"coefZ",this.bot.coefZ)
-			document.getElementById('score2').innerHTML = score;
+			if(tab[i-1].model.score>score){
+				score = tab[i-1].model.score
+			}
 		}
+		resultat.push(l)
+		console.log(score)
+		console.log("coefW",this.bot.coefW,"coefX",this.bot.coefX,"coefY",this.bot.coefY,"coefZ",this.bot.coefZ)
+		document.getElementById('score2').innerHTML = "Best:" + score;
+		
 	}
 
 	buttonAI(){
@@ -740,16 +719,7 @@ class Bot {
 	}
 }
 
-document.addEventListener('keyup', (event) => {
-	const nomTouche = event.key;
-	app.keyboardEvent(nomTouche);	
-}, false);
 
-let btn = document.getElementById('AI_button');
-btn.addEventListener('click', (event) => {
-	app.buttonAI();
-	btn.blur();
-});
 
 function getRandomColor() {
 	let letters = '0123456789ABCDEF';
@@ -783,4 +753,22 @@ function clone(originalObject){ //Permet de copier un objet avec les function sa
   
     return deepCopy; 
 } 
+		
+var resultat = []
+	
+var tab = [];
+for (let i = 1; i <= 250; i++) {
+	let name = "app"+i
+	console.log(name,i)
+	tab.push(new Controller(new Model(), new View(new Canvas('dessin'+i,24,10,3)), new Bot()));
+	tab[i-1].buttonAI();
+}
 
+function final(){
+	var tableau = new Array(250);
+	for (var i = 0; i < resultat.length; i++) {
+		tableau[resultat[i][6]] = resultat[i];
+	}
+	tableau.sort((a, b) => b[0] - a[0]);
+	console.log(tableau)
+}

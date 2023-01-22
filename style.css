@@ -1,0 +1,52 @@
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	background: rgb(18, 18, 18);
+	color: rgb(255, 255, 255);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 100vh;
+}
+
+.container__0 {
+	border-radius: 5px;
+	text-align: center;
+	padding: 10px;
+	width: 500px;
+	display: flex;
+}
+
+.container__0 p {
+	padding: 20px;
+}
+
+#AI_button {
+	background: rgb(3, 218, 197);
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+	padding: 5px 10px;
+	letter-spacing: 1px;
+	text-transform: uppercase;
+}
+.container__0 canvas{
+	
+	border: solid 1px red;
+	padding: 5px;
+}
+.container__0 canvas{
+	
+	border: solid 1px red;
+	padding: 5px;
+}
+.container__0 #space{
+	padding: 4%	
+}
+#minicanvas{
+	display: flex;
+}
