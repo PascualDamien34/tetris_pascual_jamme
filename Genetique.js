@@ -670,14 +670,18 @@ class Genetique{
 		for(let i = 0;i<this.nombreTetris/(5/2); i++){
 			this.appTableau[i] = new Controller(new Model(), new Bot(this.finalTableau[i][1],this.finalTableau[i][2],this.finalTableau[i][3],this.finalTableau[i][4]),i);
 		}
-		for(let i = 0;i<this.nombreTetris/(5/2); i++){
-			this.appTableau[i+(this.nombreTetris/(5/2))] = new Controller(new Model(), new Bot((this.finalTableau[i][1]+this.finalTableau[i+1][1])/2,(this.finalTableau[i][2]+this.finalTableau[i+1][2])/2,(this.finalTableau[i][3]+this.finalTableau[i+1][3])/2,(this.finalTableau[i][4]+this.finalTableau[i+1][4])/2),i+(this.nombreTetris/(5/2)));
+		for(let i = 0;i<this.nombreTetris/(2); i++){
+			let cW = this.mutation((this.finalTableau[i][1]+this.finalTableau[i+1][1])/2);
+			let cX = this.mutation((this.finalTableau[i][2]+this.finalTableau[i+1][2])/2);
+			let cY = this.mutation((this.finalTableau[i][3]+this.finalTableau[i+1][3])/2);
+			let cZ = this.mutation((this.finalTableau[i][4]+this.finalTableau[i+1][4])/2);
+
+			this.appTableau[i+(this.nombreTetris/(5/2))] = new Controller(new Model(), new Bot(cW,cX,cY,cZ),i+(this.nombreTetris/(5/2)));
 		}
-		for(let i = 0;i<(this.nombreTetris/5); i++){
-			this.appTableau[i+(this.nombreTetris/(5/4))] = new Controller(new Model(), new Bot(-Math.random(),Math.random(),-Math.random(),-Math.random()),i+(this.nombreTetris/(5/4)));
+		for(let i = 0;i<(this.nombreTetris/10); i++){
+			this.appTableau[i+(this.nombreTetris/(10/9))] = new Controller(new Model(), new Bot(-Math.random(),Math.random(),-Math.random(),-Math.random()),i+(this.nombreTetris/(10/9)));
 		}
 		for (let i = 0; i < this.nombreTetris; i++) {
-			console.log("final",this.appTableau[i])
 			this.appTableau[i].buttonAI();
 			this.bindAddResultat = this.bindAddResultat.bind(this);
 			this.appTableau[i].bindAddResultat(this.bindAddResultat);
@@ -685,11 +689,37 @@ class Genetique{
 		this.resultat = [];
 		this.finalTableau = new Array(this.nombreTetris);
 		this.finalTableau.fill(0);
-		if(this.iteration<10){
+		if(this.iteration<100){
 			this.intervalFinal = setInterval(this.final, 1000);
 		}
 		this.iteration++;
 		console.log("iteration",this.iteration)
+	}
+
+	mutation(coef){
+		let pourcentage = Math.random();
+		if(pourcentage<=0.05){
+			pourcentage *= 2;
+			if(Math.random()>0.5){
+				pourcentage = pourcentage * -1;
+			}
+			if(coef<0){
+				coef = coef + pourcentage;
+				if(coef<-1){
+					coef = -1;
+				}else if(coef>0){
+					coef = 0;
+				}
+			}else{
+				coef = coef + pourcentage;
+				if(coef<0){
+					coef = 0;
+				}else if(coef>1){
+					coef = 1;
+				}
+			}
+		}
+		return coef;
 	}
 }
 
